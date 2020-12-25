@@ -1,3 +1,4 @@
+#include <filesystem>
 #include <fstream>
 #include "mesh.h"
 #include "error/error.h"
@@ -106,7 +107,10 @@ void TMesh::set_mesh_file(string path, string name)
     file.exceptions (std::ifstream::failbit | std::ifstream::badbit);
     try
     {
-        file.open(path + "/" + name);
+        if (filesystem::exists(name))
+            file.open(name);
+        else
+            file.open(path + "/" + name);
         file >> val;
         if ((type = decode_mesh_type(val, fe_size, be_size, dim)) == FEType::undefined)
         {

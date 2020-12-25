@@ -21,6 +21,7 @@ template <class T> matrix<double> TNode<T>::fe_coord{};
 template <class T> class TParser
 {
 private:
+    bool is_predicate = false;
     vector<pair<string, TValue<T>>> argument;         // Список названий аргументов искомых функций
     vector<pair<string, TValue<T>>> result;           // Таблица результирующих функций
     vector<pair<string, TNode<T>>> constant;          // Таблица констант
@@ -275,13 +276,14 @@ template <class T> void TParser<T>::assignment(void)
 
     if (token == "(")
     {
+        is_predicate = true;
         // Граничное условие
         if (!is_find(result, name))
             set_error(Error::InvalidBoundaryCondition);
         type = get_exp(pred);
         if (type not_eq ValueType::Scalar)
             set_error(Error::Syntax);
-        get_token();
+//        get_token();
         if (token not_eq ")")
             set_error(Error::Syntax);
         get_token();
@@ -291,6 +293,7 @@ template <class T> void TParser<T>::assignment(void)
         if (type not_eq ValueType::Scalar)
             set_error(Error::Syntax);
         bc_list.push_back(make_tuple(name, pred, val));
+        is_predicate = false;
         return;
     }
 
@@ -580,7 +583,11 @@ template <class T> ValueType TParser<T>::token_prim(TNode<T> &code)
             ret = ValueType::Matrix;
         }
         else if (is_find(argument, name))
+        {
+            if (is_predicate)
+                return ValueType::Scalar;
             set_error(Error::UsingArgument);
+        }
         else
             set_error(Error::UndefinedVariable);
         break;
