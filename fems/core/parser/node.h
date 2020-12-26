@@ -36,16 +36,10 @@ public:
             return get<0>(val);
         case Token::Variable:
             return *get<1>(val);
-        case Token::Plus:
-            if (left == nullptr) // unary
-                return right->value();
-            else
-                return left->value() + right->value();
-        case Token::Minus:
-            if (left == nullptr)
-                return -(right->value());
-            else
-                return left->value() - right->value();
+        case Token::Plus: // unary or binary
+            return (left == nullptr) ? right->value() : left->value() + right->value();
+        case Token::Minus: // unary or binary
+            return (left == nullptr) ? -(right->value()) : left->value() - right->value();
         case Token::Mul:
             return left->value() * right->value();
         case Token::Div:

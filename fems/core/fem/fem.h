@@ -10,33 +10,56 @@
 #include "parser/parser.h"
 #include "shape/shape.h"
 
-
 using namespace std;
 
+//---------------------------------------------------------
+// Реализация МКЭ для заданного пользователем функционала
+//---------------------------------------------------------
 template <class S> class TFEM
 {
 private:
+    // Решатель СЛАУ
     S solver;
+    // Сетка
     TMesh mesh;
+    // Функционал и разрешающие соотношения
     list<string> program;
+    // Запуск вычислительного процесса
     template <typename T> void run(void)
     {
         TParser<T> parser;
-        matrix<double> it_m;
 
         parser.set_program(program);
-        solver.setup(&mesh);
+        solver.setup(mesh);
+        create_global_matrix(parser);
+        use_boundary_condition(parser);
+    }
+    // Формирование глобальной матрицы жесткости
+    template <typename T> void create_global_matrix(TParser<T> &parser)
+    {
+        matrix<double> it_m;
+
         for (auto i = 0u; i < mesh.get_fe().size1(); i++)
         {
             parser.set_data(mesh.get_shape<T>(i));
             it_m = parser.run(mesh.get_coord_fe(i)).asMatrix();
-
             ansamble_local_matrix(it_m, i);
 
 
             cout << it_m << endl;
         }
     }
+    // Учет граничных условий
+    template <typename T> void use_boundary_condition(TParser<T> &parser)
+    {
+        list<tuple<int, int, double>> bc;
+
+        parser.get_boundary_conditions(mesh, bc);
+        for (auto [i, dir, val]: bc)
+            solver.setBoundaryCondition(i * mesh.get_freedom() + dir, val);
+
+    }
+    // Ансамблирование локальной матрицы жесткости к глобальной
     void ansamble_local_matrix(matrix<double> &lm, unsigned i)
     {
         unsigned freedom = mesh.get_freedom(),

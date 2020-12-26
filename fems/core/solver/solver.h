@@ -20,7 +20,7 @@ public:
     virtual ~TSolver(void) {}
     virtual void clear(void) = 0;
     virtual void setBoundaryCondition(unsigned, double) = 0;
-    virtual void setup(TMesh*) = 0;
+    virtual void setup(TMesh&) = 0;
     virtual void setMatrix(double, unsigned, unsigned) = 0;
     virtual void addMatrix(double, unsigned, unsigned) = 0;
     void setLoad(double value, unsigned i)

@@ -10,6 +10,7 @@
 #include <map>
 #include "defs.h"
 #include "node.h"
+#include "mesh/mesh.h"
 #include "error/error.h"
 #include "value/value.h"
 
@@ -118,6 +119,14 @@ private:
             set_error(Error::InternalError);
         value = ptr->second;
     }
+    template <class P> int get_name_no(vector<pair<string, P>> &table, string name)
+    {
+        auto ptr = find_if(table.begin(), table.end(), [name](pair<string, P> i) { return i.first == name; } );
+
+        if (ptr == table.end())
+            set_error(Error::InternalError);
+        return int(ptr - table.begin());
+    }
     void set_error(Error error)
     {
         throw TError(error);
@@ -161,6 +170,7 @@ public:
         functional.begin()->second.set_fe(fe);
         return functional.begin()->second.value();
     }
+    void get_boundary_conditions(TMesh&, list<tuple<int, int, double>>&);
 };
 
 template <class T> void TParser<T>::compile(void)
@@ -462,7 +472,8 @@ template <class T> ValueType TParser<T>::token_add(TNode<T> &code)
     string pm;
     ValueType ret = token_mul(code);
 
-    while (token_type not_eq TokenType::Finished and ((pm = token) == "+" or pm == "-" or pm == ">" or pm == "<" or pm == ">=" or pm == "<=" or pm == "<>" or pm == "=="))
+    while (token_type not_eq TokenType::Finished and ((pm = token) == "+" or pm == "-" or pm == ">" or
+                                                      pm == "<" or pm == ">=" or pm == "<=" or pm == "<>" or pm == "=="))
     {
         get_token();
         if (token_mul(hold) not_eq ret)
@@ -584,9 +595,10 @@ template <class T> ValueType TParser<T>::token_prim(TNode<T> &code)
         }
         else if (is_find(argument, name))
         {
-            if (is_predicate)
-                return ValueType::Scalar;
-            set_error(Error::UsingArgument);
+            if (!is_predicate)
+                set_error(Error::UsingArgument);
+            code = &(find_if(argument.begin(), argument.end(), [name](pair<string, TValue<T>> i) { return i.first == name; } )->second);
+            ret = ValueType::Scalar;
         }
         else
             set_error(Error::UndefinedVariable);
@@ -679,6 +691,18 @@ template <class T> ValueType TParser<T>::token_func(TNode<T> &code)
         get_token();
     }
     return ret;
+}
+
+template <class T> void TParser<T>::get_boundary_conditions(TMesh &mesh, list<tuple<int, int, double>> &bc)
+{
+    for (auto i = 0; i < mesh.get_x().size1(); i++)
+    {
+        for (auto j = 0; j < mesh.get_x().size2(); j++)
+            argument[j].second = mesh.get_x(i, j);
+        for (auto [name, predicate, val]: bc_list)
+            if (predicate.value().asScalar() not_eq 0)
+                bc.push_back(make_tuple(i, get_name_no(result, name), val.value().asScalar()));
+    }
 }
 
 

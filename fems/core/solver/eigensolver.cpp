@@ -38,16 +38,16 @@ bool TEigenSolver::solve(vector<double>& r, double, bool&)
     return true;
 }
 
-void TEigenSolver::setup(TMesh* mesh)
+void TEigenSolver::setup(TMesh &mesh)
 {
-    int size = (int)mesh->get_x().size1(),
-        freedom = mesh->get_freedom();
+    int size = (int)mesh.get_x().size1(),
+        freedom = mesh.get_freedom();
 
     // Резервируем объем необходимой памяти
     memMap.resize(size * freedom);
     for (int i = 0; i < size; i++)
         for (int j = 0; j < freedom; j++)
-            memMap[i * freedom + j] = (int)mesh->get_mesh_map(i).size() * freedom * freedom;
+            memMap[i * freedom + j] = (int)mesh.get_mesh_map(i).size() * freedom * freedom;
 
     matrix.resize(size * freedom, size * freedom);
     matrix.setZero();

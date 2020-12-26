@@ -43,6 +43,18 @@ public:
         val = rhs.val;
         return *this;
     }
+    bool isScalar(void)
+    {
+        return (get_if<Scalar>(&val)) ? true : false;
+    }
+    bool isVector(void)
+    {
+        return (get_if<Vector>(&val)) ? true : false;
+    }
+    bool isMatrix(void)
+    {
+        return (get_if<Matrix>(&val)) ? true : false;
+    }
     double asScalar(void)
     {
         if (not get_if<Scalar>(&val))

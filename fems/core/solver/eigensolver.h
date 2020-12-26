@@ -20,7 +20,7 @@ private:
 public:
     TEigenSolver(void) {}
     virtual ~TEigenSolver(void) {}
-    void setup(TMesh*);
+    void setup(TMesh&);
     void setBoundaryCondition(unsigned, double);
     void clear(void)
     {
