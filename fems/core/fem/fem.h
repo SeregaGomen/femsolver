@@ -75,7 +75,7 @@ private:
                 if (l not_eq k)
                     solver.addMatrix(lm(l, k), mesh.get_fe(i, k / freedom) * freedom + k % freedom, mesh.get_fe(i, l / freedom) * freedom + l % freedom);
             }
-//            solver.addLoad(fe->getLoad(l), mesh->getFE(i, l / freedom) * freedom + l % freedom);
+            solver.addLoad(lm(l, size), mesh.get_fe(i, l / freedom) * freedom + l % freedom);
         }
     }
     string parse_mesh_file_name(string str)

@@ -26,6 +26,7 @@ private:
     vector<pair<string, TValue<T>>> argument;         // Список названий аргументов искомых функций
     vector<pair<string, TValue<T>>> result;           // Таблица результирующих функций
     vector<pair<string, TNode<T>>> constant;          // Таблица констант
+    vector<pair<string, TNode<T>>> load;              // Таблица нагрузок
     vector<pair<string, TNode<T>>> function;          // Таблица функций
     vector<pair<string, TNode<T>>> functional;        // Таблица функционалов
     list<tuple<string, TNode<T>, TNode<T>>> bc_list;  // Список граничных условий
@@ -39,6 +40,7 @@ private:
                                     { "ARGUMENT", Token::Argument },
                                     { "CONSTANT", Token::Constant },
                                     { "RESULT", Token::Result },
+                                    { "LOAD", Token::Load },
                                     { "FUNCTION", Token::Function },
                                     { "FUNCTIONAL", Token::Functional }
                                 };
@@ -80,7 +82,7 @@ private:
                                     { ">=", Token::Ge },
                                     { "<=", Token::Le },
                                     { "<>", Token::Ne },
-                                    { "&", Token::Variation }
+                                    { "var", Token::Variation }
                                 };
     Parser::TokenType get_token(void);
     bool is_delim(char chr) noexcept
@@ -229,6 +231,9 @@ template <class T> void TParser<T>::get_variable(Token cur_tok)
     case Token::Result:
         result.push_back(pair<string, TValue<T>>(name, TValue<T>()));
         break;
+    case Token::Load:
+        load.push_back(pair<string, TValue<T>>(name, TValue<T>()));
+        break;
     case Token::Function:
         function.push_back(pair<string, TNode<T>>(name, TNode<T>()));
         break;
@@ -250,6 +255,12 @@ template <class T> void TParser<T>::get_variable(Token cur_tok)
             if (type not_eq ValueType::Scalar)
                 set_error(Error::InvalidOperation);
             set_value(constant, name, exp);
+        }
+        else if (cur_tok == Token::Load)
+        {
+            if (type not_eq ValueType::Scalar)
+                set_error(Error::InvalidOperation);
+            set_value(load, name, exp);
         }
         else if (cur_tok == Token::Function)
         {
@@ -293,7 +304,6 @@ template <class T> void TParser<T>::assignment(void)
         type = get_exp(pred);
         if (type not_eq ValueType::Scalar)
             set_error(Error::Syntax);
-//        get_token();
         if (token not_eq ")")
             set_error(Error::Syntax);
         get_token();
@@ -316,6 +326,12 @@ template <class T> void TParser<T>::assignment(void)
         if (type not_eq ValueType::Scalar)
             set_error(Error::InvalidOperation);
         set_value(constant, name, val);
+    }
+    else if (is_find(load, name))
+    {
+        if (type not_eq ValueType::Scalar)
+            set_error(Error::InvalidOperation);
+        set_value(load, name, val);
     }
     else if (is_find(function, name))
     {
@@ -513,18 +529,27 @@ template <class T> ValueType TParser<T>::token_mul(TNode<T> &code)
 
 template <class T> ValueType TParser<T>::token_var(TNode<T> &code)
 {
+    string lhs = token,
+           rhs;
     TNode<T> hold;
-    ValueType ret = token_pow(code);
+    ValueType ret_left = token_pow(code),
+              ret_right;
 
-    while (token_type not_eq TokenType::Finished and token[0] == '&')
+    while (token_type not_eq TokenType::Finished and token == "var")
     {
         get_token();
-        if (token_pow(hold) not_eq ValueType::Vector and ret not_eq ValueType::Vector)
+        rhs = token;
+        if ((ret_left == ValueType::Scalar or ret_left == ValueType::Vector) and (ret_right = token_pow(hold)) == ValueType::Vector)
+        {
+            if (ret_left == ValueType::Scalar and (not is_find(load, lhs) or not is_find(result, rhs)))
+                set_error(Error::Syntax);
+            code = TNode<T>(make_shared<TNode<T>>(code), Token::Variation, make_shared<TNode<T>>(hold));
+            ret_left = ValueType::Matrix;
+        }
+        else
             set_error(Error::InvalidOperation);
-        code = TNode<T>(make_shared<TNode<T>>(code), Token::Variation, make_shared<TNode<T>>(hold));
-        ret = ValueType::Matrix;
     }
-    return ret;
+    return ret_left;
 }
 
 template <class T> ValueType TParser<T>::token_pow(TNode<T>& code)
@@ -581,6 +606,11 @@ template <class T> ValueType TParser<T>::token_prim(TNode<T> &code)
         else if (is_find(constant, name))
         {
             get_value(constant, name, code);
+            ret = ValueType::Scalar;
+        }
+        else if (is_find(load, name))
+        {
+            get_value(load, name, code);
             ret = ValueType::Scalar;
         }
         else if (is_find(function, name))

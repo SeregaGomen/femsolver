@@ -115,13 +115,22 @@ public:
                r{rhs.value()};
         matrix<double> res;
 
-        if (not get_if<Vector>(&lhs.val) or not get_if<Vector>(&rhs.val))
+        if (get_if<Vector>(&lhs.val) and get_if<Vector>(&rhs.val))
+        {
+            res.resize(get<vector<double>>(get<Vector>(l.val)).size(), get<vector<double>>(get<Vector>(l.val)).size() + 1);
+            for (auto i = 0u; i < res.size1(); i++)
+                for (auto j = 0u; j < res.size1(); j++)
+                    res[i][j] = get<vector<double>>(get<Vector>(l.val))[i] * get<vector<double>>(get<Vector>(r.val))[j] +
+                                get<vector<double>>(get<Vector>(l.val))[j] * get<vector<double>>(get<Vector>(r.val))[i];
+        }
+        else if (get_if<Scalar>(&lhs.val) and get_if<Vector>(&rhs.val))
+        {
+            res.resize(get<vector<double>>(get<Vector>(r.val)).size(), get<vector<double>>(get<Vector>(r.val)).size() + 1);
+            for (auto i = 0u; i < res.size1(); i++)
+                res[i][res.size1()] = get<double>(l.val) * get<vector<double>>(get<Vector>(r.val))[i];
+        }
+        else
             throw TError(Error::InvalidOperation);
-        res.resize(get<vector<double>>(get<Vector>(l.val)).size(), get<vector<double>>(get<Vector>(l.val)).size());
-        for (auto i = 0u; i < res.size1(); i++)
-            for (auto j = 0u; j < res.size1(); j++)
-                res[i][j] = get<vector<double>>(get<Vector>(l.val))[i] * get<vector<double>>(get<Vector>(r.val))[j] +
-                            get<vector<double>>(get<Vector>(l.val))[j] * get<vector<double>>(get<Vector>(r.val))[i];
         return TValue(res);
     }
     friend ostream &operator << (ostream &out, const TValue &rhs)

@@ -115,7 +115,7 @@ public:
     }
     TValue<T> integral(const shared_ptr<TNode> code)
     {
-        matrix<double> res(T::size() * T::freedom(), T::size() * T::freedom());
+        matrix<double> res(T::size() * T::freedom(), T::size() * T::freedom() + 1);
 
         for (auto i = 0u; i < T::w().size(); i++)
         {
