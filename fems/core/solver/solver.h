@@ -23,7 +23,7 @@ public:
     virtual void setup(TMesh&) = 0;
     virtual void setMatrix(double, unsigned, unsigned) = 0;
     virtual void addMatrix(double, unsigned, unsigned) = 0;
-    void setLoad(double value, unsigned i)
+    void setLoad(unsigned i, double value)
     {
         loadVector[i] = value;
     }

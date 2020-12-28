@@ -33,6 +33,7 @@ private:
         solver.setup(mesh);
         create_global_matrix(parser);
         use_boundary_condition(parser);
+        solve_equations();
     }
     // Формирование глобальной матрицы жесткости
     template <typename T> void create_global_matrix(TParser<T> &parser)
@@ -52,12 +53,27 @@ private:
     // Учет граничных условий
     template <typename T> void use_boundary_condition(TParser<T> &parser)
     {
-        list<tuple<int, int, double>> bc;
+        list<tuple<int, int, int, double>> bc;
 
         parser.get_boundary_conditions(mesh, bc);
-        for (auto [i, dir, val]: bc)
-            solver.setBoundaryCondition(i * mesh.get_freedom() + dir, val);
+        for (auto [i, type, dir, val]: bc)
+            (type == 1) ? solver.setBoundaryCondition(i * mesh.get_freedom() + dir, val) : solver.setLoad(i * mesh.get_freedom() + dir, val);
 
+    }
+    // Решение СЛАУ
+    bool solve_equations(void)
+    {
+        double eps = 1.0E-10;
+        bool is_aborted = false,
+             ret;
+        vector<double> res;
+
+        solver.print("matrix.res");
+
+        ret = solver.solve(res, eps, is_aborted);
+        if (!is_aborted and ret)
+            cout << res;
+        return (is_aborted) ? false : ret;
     }
     // Ансамблирование локальной матрицы жесткости к глобальной
     void ansamble_local_matrix(matrix<double> &lm, unsigned i)

@@ -10,3 +10,4 @@ Exx = diff(U, x)
 Sxx = E * Exx
 W = -integral(Sxx var Exx) - integral(X var U)
 U(x == 0) = 0
+X(x == 3) = 0.25

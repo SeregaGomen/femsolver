@@ -23,13 +23,13 @@ template <class T> class TParser
 {
 private:
     bool is_predicate = false;
-    vector<pair<string, TValue<T>>> argument;         // Список названий аргументов искомых функций
-    vector<pair<string, TValue<T>>> result;           // Таблица результирующих функций
-    vector<pair<string, TNode<T>>> constant;          // Таблица констант
-    vector<pair<string, TNode<T>>> load;              // Таблица нагрузок
-    vector<pair<string, TNode<T>>> function;          // Таблица функций
-    vector<pair<string, TNode<T>>> functional;        // Таблица функционалов
-    list<tuple<string, TNode<T>, TNode<T>>> bc_list;  // Список граничных условий
+    vector<pair<string, TValue<T>>> argument;               // Список названий аргументов искомых функций
+    vector<pair<string, TValue<T>>> result;                 // Таблица результирующих функций
+    vector<pair<string, TNode<T>>> constant;                // Таблица констант
+    vector<pair<string, TNode<T>>> load;                    // Таблица нагрузок
+    vector<pair<string, TNode<T>>> function;                // Таблица функций
+    vector<pair<string, TNode<T>>> functional;              // Таблица функционалов
+    list<tuple<string, int, TNode<T>, TNode<T>>> bc_list;   // Список граничных условий
     list<string> program;
     string token;
     char* expression = nullptr;
@@ -172,7 +172,7 @@ public:
         functional.begin()->second.set_fe(fe);
         return functional.begin()->second.value();
     }
-    void get_boundary_conditions(TMesh&, list<tuple<int, int, double>>&);
+    void get_boundary_conditions(TMesh&, list<tuple<int, int, int, double>>&);
 };
 
 template <class T> void TParser<T>::compile(void)
@@ -284,6 +284,7 @@ template <class T> void TParser<T>::get_variable(Token cur_tok)
 
 template <class T> void TParser<T>::assignment(void)
 {
+    int bc_type;
     string name;
     TNode<T> val,
              pred;
@@ -298,8 +299,12 @@ template <class T> void TParser<T>::assignment(void)
     if (token == "(")
     {
         is_predicate = true;
-        // Граничное условие
-        if (!is_find(result, name))
+        // Граничное условие или сосредоточенная нагрузка
+        if (is_find(result, name))
+            bc_type = 1;
+        else if (is_find(load, name))
+            bc_type = 2;
+        else
             set_error(Error::InvalidBoundaryCondition);
         type = get_exp(pred);
         if (type not_eq ValueType::Scalar)
@@ -312,7 +317,7 @@ template <class T> void TParser<T>::assignment(void)
         type = get_exp(val);
         if (type not_eq ValueType::Scalar)
             set_error(Error::Syntax);
-        bc_list.push_back(make_tuple(name, pred, val));
+        bc_list.push_back(make_tuple(name, bc_type, pred, val));
         is_predicate = false;
         return;
     }
@@ -723,15 +728,15 @@ template <class T> ValueType TParser<T>::token_func(TNode<T> &code)
     return ret;
 }
 
-template <class T> void TParser<T>::get_boundary_conditions(TMesh &mesh, list<tuple<int, int, double>> &bc)
+template <class T> void TParser<T>::get_boundary_conditions(TMesh &mesh, list<tuple<int, int, int, double>> &bc)
 {
     for (auto i = 0; i < mesh.get_x().size1(); i++)
     {
         for (auto j = 0; j < mesh.get_x().size2(); j++)
             argument[j].second = mesh.get_x(i, j);
-        for (auto [name, predicate, val]: bc_list)
+        for (auto [name, type, predicate, val]: bc_list)
             if (predicate.value().asScalar() not_eq 0)
-                bc.push_back(make_tuple(i, get_name_no(result, name), val.value().asScalar()));
+                bc.push_back(make_tuple(i, type, (type == 1) ? get_name_no(result, name) : get_name_no(load, name), val.value().asScalar()));
     }
 }
 
