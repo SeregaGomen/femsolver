@@ -730,9 +730,9 @@ template <class T> ValueType TParser<T>::token_func(TNode<T> &code)
 
 template <class T> void TParser<T>::get_boundary_conditions(TMesh &mesh, list<tuple<int, int, int, double>> &bc)
 {
-    for (auto i = 0; i < mesh.get_x().size1(); i++)
+    for (auto i = 0u; i < mesh.get_x().size1(); i++)
     {
-        for (auto j = 0; j < mesh.get_x().size2(); j++)
+        for (auto j = 0u; j < mesh.get_x().size2(); j++)
             argument[j].second = mesh.get_x(i, j);
         for (auto [name, type, predicate, val]: bc_list)
             if (predicate.value().asScalar() not_eq 0)
