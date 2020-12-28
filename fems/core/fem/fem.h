@@ -79,7 +79,7 @@ private:
     void ansamble_local_matrix(matrix<double> &lm, unsigned i)
     {
         unsigned freedom = mesh.get_freedom(),
-                 size = (unsigned)lm.size1() * freedom;
+                 size = (unsigned)lm.size1();
 
 
         // Учет матрицы
