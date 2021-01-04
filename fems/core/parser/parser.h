@@ -164,8 +164,17 @@ public:
     }
     void set_data(const vector<T> &v) noexcept
     {
-        for (auto &i: result)
-            i.second = v;
+        vector<double> c(T::size());
+
+        for (auto i = 0; i < result.size(); i++)
+        {
+            vector<T> fun(T::size() * T::freedom(), c);
+
+            for (auto j = 0; j < T::size(); j++)
+                fun[j * T::freedom() + i] = v[j];
+
+            result[i].second = fun;
+        }
     }
     TValue<T> run(const matrix<double>& fe)
     {
@@ -181,7 +190,7 @@ template <class T> void TParser<T>::compile(void)
     {
         // Удаляем пробелы в начале и конце строки
         str.erase(0, str.find_first_not_of(" \t\n\r\f\v")).erase(str.find_last_not_of(" \t\n\r\f\v") + 1);
-        if (not str.length())
+        if (not str.length() or (str[0] == '/' and str[1] == '/'))
             continue;
         expression = const_cast<char*>(str.c_str());
         tok = Token::Indefined;

@@ -68,8 +68,7 @@ private:
              ret;
         vector<double> res;
 
-        solver.print("matrix.res");
-
+        //solver.print("matrix.res");
         ret = solver.solve(res, eps, is_aborted);
         if (!is_aborted and ret)
             cout << res;
@@ -96,7 +95,6 @@ private:
     }
     string parse_mesh_file_name(string str)
     {
-        str = str.substr(str.find_first_not_of(" \t"), str.length());
         if (str[0] not_eq '#')
             throw TError(Error::Preprocessor);
         str = str.substr(1, str.length());
@@ -114,18 +112,29 @@ public:
         fstream file(name);
         string str;
         int pos;
+        bool is_mesh = false;
 
         if (file.is_open())
         {
             while (not file.eof())
             {
                 getline(file, str);
+                if (not str.length())
+                    continue;
+                str = str.substr(str.find_first_not_of(" \t"), str.length());
+                if (str[0] == '/' and str[1] == '/')
+                    continue;
                 if ((pos = int(str.find("#"))) not_eq -1)
+                {
                     mesh.set_mesh_file(filesystem::path(name).parent_path().string(), parse_mesh_file_name(str));
+                    is_mesh = true;
+                }
                 else
                     program.push_back(str);
             }
             file.close();
+            if (not is_mesh)
+                throw TError(Error::NotMesh);
         }
         else
             throw TError(Error::ReadFile);

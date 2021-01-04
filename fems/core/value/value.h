@@ -10,7 +10,11 @@
 
 using namespace std;
 
-template <class T> class TValue
+
+//#define DEBUG
+
+
+template <typename T> class TValue
 {
 using Scalar = double;
 using Vector = variant<vector<T>, vector<double>>;
@@ -18,6 +22,38 @@ using Matrix = matrix<double>;
 
 private:
     variant<Scalar, Vector, Matrix> val;
+#ifdef DEBUG
+    static void watch_val(const TValue &v)
+    {
+        double d_val;
+        vector<T> vt_val;
+        vector<double> vd_val;
+        matrix<double> m_val;
+
+        if (get_if<Scalar>(&v.val))
+        {
+            d_val = get<Scalar>(v.val);
+            cerr << d_val << endl;
+        }
+        else if (get_if<Vector>(&v.val) && get_if<vector<T>>(&get<Vector>(v.val)))
+        {
+            vt_val = get<vector<T>>(get<Vector>(v.val));
+            cerr << vt_val << endl;
+        }
+        else if (get_if<Vector>(&v.val) && get_if<vector<double>>(&get<Vector>(v.val)))
+        {
+            vd_val = get<vector<double>>(get<Vector>(v.val));
+            cerr << vd_val << endl;
+        }
+        else if (get_if<Matrix>(&v.val))
+        {
+            m_val = get<Matrix>(v.val);
+            cerr << m_val << endl;
+        }
+        else
+            cerr << "Unknown type of value!" << endl;
+    }
+#endif
 public:
     static array<double, 3> x;
     TValue(double d = 0) noexcept : val{d}  {}
@@ -102,11 +138,18 @@ public:
         TValue ret(lhs);
         Direct dir;
 
+#ifdef DEBUG
+        watch_val(lhs);
+        watch_val(rhs);
+#endif
         if (not get_if<vector<T>>(&get<Vector>(ret.val)) or not get_if<Scalar>(&rhs.val))
             throw TError(Error::InvalidOperation);
         dir = static_cast<Direct>(get<Scalar>(rhs.val));
         for (auto &i: get<vector<T>>(get<Vector>(ret.val)))
             i = i.diff(dir);
+#ifdef DEBUG
+        watch_val(ret);
+#endif
         return ret;
     }
     friend TValue var(const TValue &lhs, const TValue &rhs)
@@ -115,6 +158,10 @@ public:
                r{rhs.value()};
         matrix<double> res;
 
+#ifdef DEBUG
+        watch_val(l);
+        watch_val(r);
+#endif
         if (get_if<Vector>(&lhs.val) and get_if<Vector>(&rhs.val))
         {
             res.resize(get<vector<double>>(get<Vector>(l.val)).size(), get<vector<double>>(get<Vector>(l.val)).size() + 1);
@@ -165,6 +212,10 @@ public:
     {
         TValue res;
 
+#ifdef DEBUG
+        watch_val(lhs);
+        watch_val(rhs);
+#endif
         if (get_if<Scalar>(&lhs.val) and get_if<Scalar>(&rhs.val))
             res.val = get<Scalar>(lhs.val) + get<Scalar>(rhs.val);
         else if (get_if<Vector>(&lhs.val) and get_if<Vector>(&rhs.val))
@@ -173,6 +224,9 @@ public:
             res.val = get<Matrix>(lhs.val) + get<Matrix>(rhs.val);
         else
             throw TError(Error::InvalidOperation);
+#ifdef DEBUG
+        watch_val(res);
+#endif
         return res;
     }
     friend TValue operator - (const TValue &lhs, const TValue &rhs)

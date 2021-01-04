@@ -5,7 +5,7 @@
 
 enum class Error { Undefined = 0, NotSpecifiedProgram, UndefinedVariable, EmptyProgram, Syntax, Bracket, InvalidIdentifier, VariableOverride, AssignmentArgument,
                    AssignmentResult, UsingArgument, InvalidInitialisation, InvalidOperation, MeshFormat, InvalidFE, ReadFile, InternalError, AsScalar,
-                   AsVector, AsMatrix, IncorrectFE, NotSolution, InvalidBoundaryCondition, Preprocessor };
+                   AsVector, AsMatrix, IncorrectFE, NotSolution, InvalidBoundaryCondition, Preprocessor, NotMesh };
 
 class TError
 {
@@ -65,6 +65,8 @@ public:
             return "Invalid boundary condition";
         case Error::Preprocessor:
             return "Incorrect format of the specified mesh-file name";
+        case Error::NotMesh:
+            return "No mesh set";
         default:
             break;
         }

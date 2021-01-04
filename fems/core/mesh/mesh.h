@@ -73,8 +73,7 @@ public:
             }
             if (not solve(m, v))
                 throw TError(Error::InvalidFE);
-            for (auto j = 0; j < T::freedom(); j++)
-                res.push_back(T(v));
+            res.push_back(T(v));
         }
         return res;
     }

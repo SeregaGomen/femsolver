@@ -21,15 +21,15 @@ public:
     // Дифференцирование
     static vector<double> diff(const vector<double> &c, Direct)
     {
-        return {c[1], 0};
+        return { c[1], 0 };
     }
     static double value(const vector<double> &c, const array<double, 3> &x) noexcept
     {
         return (c.size() == 1) ? c[0] : c[0] + c[1] * x[0];
     }
-    static double jacobian(const matrix<double> &x)
+    static matrix<double> jacobi(int, const matrix<double> &x)
     {
-        return (x(1, 0) - x(0, 0)) * 0.5;
+        return { { (x(1, 0) - x(0, 0)) * 0.5 } };
     }
     static int size(void) noexcept
     {
@@ -41,23 +41,35 @@ public:
     }
     static vector<double> w(void)
     {
-        return {0.555555555566666, 0.888888888888889, 0.555555555566666};
+        return { 0.555555555566666, 0.888888888888889, 0.555555555566666 };
     }
     static vector<double> xi(void)
     {
-        return {-0.774596669241483, 0, 0.774596669241483};
+        return { -0.774596669241483, 0, 0.774596669241483 };
     }
     static vector<double> eta(void)
     {
-        return {0, 0, 0};
+        return { 0, 0, 0 };
     }
     static vector<double> psi(void)
     {
-        return {0, 0, 0};
+        return { 0, 0, 0 };
     }
     static double coeff(matrix<double> &x, int i, int j)
     {
-        return vector<double>{1.0, x(i, 0)}[j];
+        return vector<double>{ 1.0, x(i, 0) }[j];
+    }
+    static double x(int i, const matrix<double> &ij)
+    {
+        return ij(0, 0) * xi()[i];
+    }
+    static double y(int, const matrix<double>&)
+    {
+        return 0;
+    }
+    static double z(int, const matrix<double>&)
+    {
+        return 0;
     }
 };
 
@@ -88,19 +100,19 @@ public:
     {
         return (c.size() == 1) ? c[0] : c[0] + c[1] * x[0] + c[2] * x[1];
     }
-    static double jacobian(const matrix<double>& x)
+    static matrix<double> jacobi(int, const matrix<double> &x)
     {
         matrix<double> jacobi(2, 2);
         vector<double> d_xi{ -1.0, 1.0, 0.0 },
                        d_eta{ -1.0, 0.0, 1.0 };
 
-        for (auto i = 0; i < 2; i++)
-            for (auto j = 0; j < size(); j++)
+        for (auto j = 0; j < 2; j++)
+            for (auto k = 0; k < size(); k++)
             {
-                jacobi(0, i) += d_xi[j] * x(j, i);
-                jacobi(1, i) += d_eta[j] * x(j, i);
+                jacobi(0, j) += d_xi[k] * x(k, j);
+                jacobi(1, j) += d_eta[k] * x(k, j);
             }
-        return det2x2(jacobi);
+        return jacobi;
     }
     static int size(void) noexcept
     {
@@ -130,6 +142,18 @@ public:
     {
         return vector<double>{ 1.0, x(i, 0), x(i, 1) }[j];
     }
+    static double x(int i, const matrix<double> &ij)
+    {
+        return ij(0, 0) * xi()[i] + ij(0, 1) * eta()[i];
+    }
+    static double y(int i, const matrix<double> &ij)
+    {
+        return ij(1, 0) * xi()[i] + ij(1, 1) * eta()[i];
+    }
+    static double z(int, const matrix<double>&)
+    {
+        return 0;
+    }
 };
 
 
@@ -146,7 +170,7 @@ public:
     TShape(const vector<double> &p) noexcept : c{p} {}
     TShape(const TShape &p) noexcept : c{p.c} {}
     ~TShape(void) noexcept = default;
-    TShape& operator = (const TShape& rhs) noexcept
+    TShape &operator = (const TShape& rhs) noexcept
     {
         c = rhs.c;
         return *this;
@@ -159,9 +183,9 @@ public:
     {
         return T::value(c, x);
     }
-    static double jacobian(const matrix<double> &x)
+    static matrix<double> jacobi(int i, const matrix<double> &x)
     {
-        return T::jacobian(x);
+        return T::jacobi(i, x);
     }
     static int size(void) noexcept
     {
@@ -190,6 +214,18 @@ public:
     static double coeff(matrix<double> &x, int i, int j)
     {
         return T::coeff(x, i, j);
+    }
+    static double x(int i, const matrix<double> &ij)
+    {
+        return T::x(i, ij);
+    }
+    static double y(int i, const matrix<double> &ij)
+    {
+        return T::y(i, ij);
+    }
+    static double z(int i, const matrix<double> &ij)
+    {
+        return T::z(i, ij);
     }
     friend TShape operator - (const TShape &rhs)
     {

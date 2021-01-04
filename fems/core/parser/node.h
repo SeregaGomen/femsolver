@@ -109,22 +109,34 @@ public:
         right = rhs.right;
         return *this;
     }
-    void set_fe(const matrix<double>& fec)
+    void set_fe(const matrix<double> &fec)
     {
         fe_coord = fec;
     }
     TValue<T> integral(const shared_ptr<TNode> code)
     {
-        matrix<double> res(T::size() * T::freedom(), T::size() * T::freedom() + 1);
+        double jacobian;
+        matrix<double> res(T::size() * T::freedom(), T::size() * T::freedom() + 1),
+                       jacobi,
+                       inverted_jacobi;
 
         for (auto i = 0u; i < T::w().size(); i++)
         {
-            TValue<T>::x[0] = T::xi()[i];
-            TValue<T>::x[1] = T::eta()[i];
-            TValue<T>::x[2] = T::psi()[i];
-            res += code->value().asMatrix();
+            // Матрица Якоби
+            jacobi = T::jacobi(i, fe_coord);
+
+            // Якобиан
+            jacobian = det(jacobi);
+
+            // Обратная матрица Якоби
+            inverted_jacobi = inv(jacobi);
+
+            TValue<T>::x[0] = T::x(i, inverted_jacobi);
+            TValue<T>::x[1] = T::y(i, inverted_jacobi);
+            TValue<T>::x[2] = T::z(i, inverted_jacobi);
+            res += code->value().asMatrix() * T::w()[i] * abs(jacobian);
         }
-        return TValue<T>(res * fabs(T::jacobian(fe_coord)));
+        return TValue<T>(res);
     }
 };
 
