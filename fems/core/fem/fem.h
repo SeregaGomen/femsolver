@@ -33,21 +33,16 @@ private:
         solver.setup(mesh);
         create_global_matrix(parser);
         use_boundary_condition(parser);
-        solve_equations();
+        if (solve_equations())
+            calc_results(parser);
     }
     // Формирование глобальной матрицы жесткости
     template <typename T> void create_global_matrix(TParser<T> &parser)
     {
-        matrix<double> it_m;
-
         for (auto i = 0u; i < mesh.get_fe().size1(); i++)
         {
             parser.set_data(mesh.get_shape<T>(i));
-            it_m = parser.run(mesh.get_coord_fe(i)).asMatrix();
-            ansamble_local_matrix(it_m, i);
-
-
-            cout << it_m << endl;
+            ansamble_local_matrix(parser.run(mesh.get_coord_fe(i)).asMatrix(), i);
         }
     }
     // Учет граничных условий
@@ -74,12 +69,16 @@ private:
             cout << res;
         return (is_aborted) ? false : ret;
     }
+    // Вычисление деформаций и напряжений
+    template <typename T> void calc_results(TParser<T> &parser)
+    {
+
+    }
     // Ансамблирование локальной матрицы жесткости к глобальной
-    void ansamble_local_matrix(matrix<double> &lm, unsigned i)
+    void ansamble_local_matrix(const matrix<double> &lm, unsigned i)
     {
         unsigned freedom = mesh.get_freedom(),
                  size = (unsigned)lm.size1();
-
 
         // Учет матрицы
         for (unsigned l = 0; l < size; l++)
