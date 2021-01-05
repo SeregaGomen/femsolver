@@ -13,14 +13,13 @@ enum class Direct { X, Y, Z };
 
 // Параметры функции формы линейного стержневого конечного элемента
 // N(x) = c0 + c1 * x
-class TShape1d2
+struct TShape1d2
 {
-public:
-    TShape1d2(void) noexcept = default;
-    ~TShape1d2(void) noexcept = default;
     // Дифференцирование
-    static vector<double> diff(const vector<double> &c, Direct)
+    static vector<double> diff(const vector<double> &c, Direct direct)
     {
+        if (direct not_eq Direct::X)
+            throw TError(Error::InternalError);
         return { c[1], 0 };
     }
     static double value(const vector<double> &c, const array<double, 3> &x) noexcept
@@ -47,54 +46,32 @@ public:
     {
         return { -0.774596669241483, 0, 0.774596669241483 };
     }
-    static vector<double> eta(void)
-    {
-        return { 0, 0, 0 };
-    }
-    static vector<double> psi(void)
-    {
-        return { 0, 0, 0 };
-    }
     static double coeff(matrix<double> &x, int i, int j)
     {
         return vector<double>{ 1.0, x(i, 0) }[j];
     }
-    static double x(int i, const matrix<double> &ij)
+    static array<double, 3> x(int i, const matrix<double> &ij)
     {
-        return ij(0, 0) * xi()[i];
-    }
-    static double y(int, const matrix<double>&)
-    {
-        return 0;
-    }
-    static double z(int, const matrix<double>&)
-    {
-        return 0;
+        return { ij(0, 0) * xi()[i], 0, 0 };
     }
 };
 
 // Параметры функции формы линейного треугольного конечного элемента
 // N(x, y) = c0 + c1 * x + c2 * y
-class TShape2d3
+struct TShape2d3
 {
-public:
-    TShape2d3(void) noexcept = default;
-    ~TShape2d3(void) noexcept = default;
     // Дифференцирование
     static vector<double> diff(const vector<double> &c, Direct direct)
     {
-        switch (direct)
-        {
-        case Direct::X:
-            return {c[1], 0, 0};
-            break;
-        case Direct::Y:
-            return {c[2], 0, 0};
-            break;
-        default:
+        vector<double> ret;
+
+        if (direct == Direct::X)
+            ret = {c[1], 0, 0};
+        else if (direct == Direct::Y)
+            ret = {c[2], 0, 0};
+        else
             throw TError(Error::InternalError);
-        }
-        return {};
+        return ret;
     }
     static double value(const vector<double> &c, const array<double, 3> &x) noexcept
     {
@@ -134,25 +111,13 @@ public:
     {
         return { 0.5, 0.0, 0.5 };
     }
-    static vector<double> psi(void)
-    {
-        return {0, 0, 0};
-    }
     static double coeff(matrix<double> &x, int i, int j)
     {
         return vector<double>{ 1.0, x(i, 0), x(i, 1) }[j];
     }
-    static double x(int i, const matrix<double> &ij)
+    static array<double, 3> x(int i, const matrix<double> &ij)
     {
-        return ij(0, 0) * xi()[i] + ij(0, 1) * eta()[i];
-    }
-    static double y(int i, const matrix<double> &ij)
-    {
-        return ij(1, 0) * xi()[i] + ij(1, 1) * eta()[i];
-    }
-    static double z(int, const matrix<double>&)
-    {
-        return 0;
+        return { ij(0, 0) * xi()[i] + ij(0, 1) * eta()[i], ij(1, 0) * xi()[i] + ij(1, 1) * eta()[i], 0 };
     }
 };
 
@@ -163,10 +128,7 @@ template <class T> class TShape
 private:
     vector<double> c; // Коэффициенты функции формы
 public:
-    TShape(double p = 0) noexcept
-    {
-        c.push_back(p);
-    }
+    TShape(double p = 0) noexcept : c{p} {}
     TShape(const vector<double> &p) noexcept : c{p} {}
     TShape(const TShape &p) noexcept : c{p.c} {}
     ~TShape(void) noexcept = default;
@@ -199,33 +161,13 @@ public:
     {
         return T::w();
     }
-    static vector<double> xi(void)
-    {
-        return T::xi();
-    }
-    static vector<double> eta(void)
-    {
-        return T::eta();
-    }
-    static vector<double> psi(void)
-    {
-        return T::psi();
-    }
     static double coeff(matrix<double> &x, int i, int j)
     {
         return T::coeff(x, i, j);
     }
-    static double x(int i, const matrix<double> &ij)
+    static array<double, 3> x(int i, const matrix<double> &ij)
     {
         return T::x(i, ij);
-    }
-    static double y(int i, const matrix<double> &ij)
-    {
-        return T::y(i, ij);
-    }
-    static double z(int i, const matrix<double> &ij)
-    {
-        return T::z(i, ij);
     }
     friend TShape operator - (const TShape &rhs)
     {

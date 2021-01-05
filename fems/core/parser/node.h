@@ -124,16 +124,12 @@ public:
         {
             // Матрица Якоби
             jacobi = T::jacobi(i, fe_coord);
-
             // Якобиан
             jacobian = det(jacobi);
-
             // Обратная матрица Якоби
             inverted_jacobi = inv(jacobi);
-
-            TValue<T>::x[0] = T::x(i, inverted_jacobi);
-            TValue<T>::x[1] = T::y(i, inverted_jacobi);
-            TValue<T>::x[2] = T::z(i, inverted_jacobi);
+            // Интегрирование по заданным узлам
+            TValue<T>::x = T::x(i, inverted_jacobi);
             res += code->value().asMatrix() * T::w()[i] * abs(jacobian);
         }
         return TValue<T>(res);
