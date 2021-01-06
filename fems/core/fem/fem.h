@@ -41,6 +41,8 @@ private:
     {
         for (auto i = 0u; i < mesh.get_fe().size1(); i++)
         {
+            if (i % 10 == 0)
+                cout << '\r' << int(100 * double(i) / double(mesh.get_fe().size1())) << '%';
             parser.set_data(mesh.get_shape<T>(i));
             ansamble_local_matrix(parser.run(mesh.get_coord_fe(i)).asMatrix(), i);
         }
@@ -147,6 +149,9 @@ public:
             break;
         case FEType::fe2d3:
             run<TShape<TShape2d3>>();
+            break;
+        case FEType::fe3d4:
+            run<TShape<TShape3d4>>();
             break;
         default:
             throw TError(Error::IncorrectFE);

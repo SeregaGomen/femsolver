@@ -385,7 +385,7 @@ template <typename T> matrix<T> inv3x3(const matrix<T> &m)
 //--------------------------------------------------------------
 //                  Решение СЛАУ методом Гаусса
 //--------------------------------------------------------------
-inline bool solve(matrix<double> &matr, vector<double> &result, double eps = 1.0E-10)
+inline bool solve(matrix<double> &matr, vector<double> &result, double eps = 1.0E-20)
 {
     double val;
 
