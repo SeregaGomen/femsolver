@@ -1,7 +1,7 @@
 #include <filesystem>
 #include <fstream>
 #include "mesh.h"
-#include "error/error.h"
+#include "msg/msg.h"
 #include "shape/shape.h"
 
 // ------------- Определение параметров КЭ ----------------------
@@ -115,13 +115,13 @@ void TMesh::set_mesh_file(string path, string name)
         if ((type = decode_mesh_type(val, fe_size, be_size, dim)) == FEType::undefined)
         {
             file.close();
-            throw TError(Error::MeshFormat);
+            throw TError(Message::MeshFormat);
         }
         file >> val;
         if (val <= 0 or dim < 1 or dim > 3)
         {
             file.close();
-            throw TError(Error::MeshFormat);
+            throw TError(Message::MeshFormat);
         }
         x.resize(val, dim);
         for (auto i = 0; i < val; i++)
@@ -131,7 +131,7 @@ void TMesh::set_mesh_file(string path, string name)
         if (val == 0)
         {
             file.close();
-            throw TError(Error::MeshFormat);
+            throw TError(Message::MeshFormat);
         }
         fe.resize(val, fe_size);
         for (auto i = 0; i < val; i++)
@@ -141,7 +141,7 @@ void TMesh::set_mesh_file(string path, string name)
         if (val == 0 and (type == FEType::fe2d3 or type == FEType::fe2d4 or type == FEType::fe3d4 or type == FEType::fe3d8))
         {
             file.close();
-            throw TError(Error::MeshFormat);
+            throw TError(Message::MeshFormat);
         }
         if ((type == FEType::fe2d3p or type == FEType::fe2d4p or type == FEType::fe2d6) or (type == FEType::fe3d3s or type == FEType::fe3d4s or type == FEType::fe3d6s))
             be = fe;
@@ -157,7 +157,7 @@ void TMesh::set_mesh_file(string path, string name)
     }
     catch (fstream::failure&)
     {
-        throw TError(Error::ReadFile);
+        throw TError(Message::ReadFile);
     }
 }
 
@@ -206,8 +206,10 @@ int TMesh::get_freedom(void)
 
 void TMesh::create_mesh_map(void)
 {
+    TProgress progress;
+
     mesh_map.resize(x.size1());
-//    msg->setProcess(ProcessCode::AnalysingMesh, 1, int(fe.size1()));
+    progress.set_process(Message::AnalysingMesh, 1, int(fe.size1()));
     for (unsigned i = 0; i < fe.size1(); /*msg->addProgress(),*/ i++)
         for (unsigned j = 0; j < fe.size2(); j++)
             for (unsigned k = 0; k < fe.size2(); k++)
@@ -217,5 +219,5 @@ void TMesh::create_mesh_map(void)
 
     for (unsigned i = 0; i < mesh_map.size(); i++)
         sort(mesh_map[i].begin(), mesh_map[i].end(), [](unsigned k, unsigned l) -> bool{ return (k < l); });
-//    msg->stopProcess();
+    progress.stop_process();
 }

@@ -2,7 +2,7 @@
 #define TMESH_H
 
 #include "matrix/matrix.h"
-#include "error/error.h"
+#include "msg/msg.h"
 
 // Типы конечных элементов
 enum class FEType { undefined  = 0, fe1d2, fe2d3, fe2d4, fe2d6, fe2d3p, fe2d4p, fe2d6p, fe3d4, fe3d8, fe3d10, fe3d3s, fe3d4s, fe3d6s };
@@ -72,7 +72,7 @@ public:
                 m(j, T::size()) = (i == j) ? 1.0 : 0.0;
             }
             if (not solve(m, v))
-                throw TError(Error::InvalidFE);
+                throw TError(Message::InvalidFE);
             res.push_back(T(v));
         }
         return res;

@@ -94,7 +94,7 @@ public:
     double asScalar(void)
     {
         if (not get_if<Scalar>(&val))
-            throw TError(Error::AsScalar);
+            throw TError(Message::AsScalar);
         return get<Scalar>(val);
     }
     vector<double> asVector(void)
@@ -102,7 +102,7 @@ public:
         vector<double> res;
 
         if (not get_if<Vector>(&val))
-            throw TError(Error::AsVector);
+            throw TError(Message::AsVector);
         if (get_if<vector<T>>(&get<Vector>(val)))
             for (auto i: get<vector<T>>(get<Vector>(val)))
                 res.push_back(i.value(x));
@@ -113,7 +113,7 @@ public:
     matrix<double> asMatrix(void)
     {
         if (not get_if<Matrix>(&val))
-            throw TError(Error::AsMatrix);
+            throw TError(Message::AsMatrix);
         return get<Matrix>(val);
     }
     friend TValue operator - (const TValue &rhs) noexcept
@@ -143,7 +143,7 @@ public:
         watch_val(rhs);
 #endif
         if (not get_if<vector<T>>(&get<Vector>(ret.val)) or not get_if<Scalar>(&rhs.val))
-            throw TError(Error::InvalidOperation);
+            throw TError(Message::InvalidOperation);
         dir = static_cast<Direct>(get<Scalar>(rhs.val));
         for (auto &i: get<vector<T>>(get<Vector>(ret.val)))
             i = i.diff(dir);
@@ -177,7 +177,7 @@ public:
                 res[i][res.size1()] = get<double>(l.val) * get<vector<double>>(get<Vector>(r.val))[i];
         }
         else
-            throw TError(Error::InvalidOperation);
+            throw TError(Message::InvalidOperation);
         return TValue(res);
     }
     friend ostream &operator << (ostream &out, const TValue &rhs)
@@ -223,7 +223,7 @@ public:
         else if (get_if<Matrix>(&lhs.val) and get_if<Matrix>(&rhs.val))
             res.val = get<Matrix>(lhs.val) + get<Matrix>(rhs.val);
         else
-            throw TError(Error::InvalidOperation);
+            throw TError(Message::InvalidOperation);
 #ifdef DEBUG
         watch_val(res);
 #endif
@@ -240,7 +240,7 @@ public:
         else if (get_if<Matrix>(&lhs.val) and get_if<Matrix>(&rhs.val))
             res.val = get<Matrix>(lhs.val) - get<Matrix>(rhs.val);
         else
-            throw TError(Error::InvalidOperation);
+            throw TError(Message::InvalidOperation);
         return res;
     }
     friend TValue operator * (const TValue &lhs, const TValue &rhs)
@@ -266,7 +266,7 @@ public:
                 res.val = get<Matrix>(lhs.val) * get<Scalar>(rhs.val);
         }
         else
-            throw TError(Error::InvalidOperation);
+            throw TError(Message::InvalidOperation);
         return res;
     }
     friend TValue operator / (const TValue &lhs, const TValue &rhs)
@@ -274,7 +274,7 @@ public:
         TValue res;
 
         if (not get_if<Scalar>(&rhs.val))
-            throw TError(Error::InvalidOperation);
+            throw TError(Message::InvalidOperation);
         if (get_if<Scalar>(&lhs.val))
             res.val = get<Scalar>(lhs.val) / get<Scalar>(rhs.val);
         else if (get_if<Vector>(&lhs.val))

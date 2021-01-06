@@ -5,7 +5,7 @@
 #include <algorithm>
 #include <array>
 #include "matrix/matrix.h"
-#include "error/error.h"
+#include "msg/msg.h"
 
 using namespace std;
 
@@ -19,7 +19,7 @@ struct TShape1d2
     inline static vector<double> diff(const vector<double> &c, Direct direct)
     {
         if (direct not_eq Direct::X)
-            throw TError(Error::InternalError);
+            throw TError(Message::InternalError);
         return { c[1], 0 };
     }
     inline static double value(const vector<double> &c, const array<double, 3> &x) noexcept
@@ -70,7 +70,7 @@ struct TShape2d3
         else if (direct == Direct::Y)
             ret = {c[2], 0, 0};
         else
-            throw TError(Error::InternalError);
+            throw TError(Message::InternalError);
         return ret;
     }
     inline static double value(const vector<double> &c, const array<double, 3> &x) noexcept
@@ -137,7 +137,7 @@ struct TShape3d4
         else if (direct == Direct::Z)
             ret = {c[3], 0, 0, 0};
         else
-            throw TError(Error::InternalError);
+            throw TError(Message::InternalError);
         return ret;
     }
     inline static double value(const vector<double> &c, const array<double, 3> &x) noexcept

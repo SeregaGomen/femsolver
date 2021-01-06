@@ -10,7 +10,7 @@ int main(int argc, char **argv)
     try
     {
         if (argc < 2)
-            throw TError(Error::NotSpecifiedProgram);
+            throw TError(Message::NotSpecifiedProgram);
         fem.set_program(argv[1]);
         fem.start();
     }

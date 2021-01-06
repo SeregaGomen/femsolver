@@ -39,23 +39,28 @@ private:
     // Формирование глобальной матрицы жесткости
     template <typename T> void create_global_matrix(TParser<T> &parser)
     {
+        TProgress progress;
+
+        progress.set_process(Message::GeneratingMatrix, 1, (int)mesh.get_fe().size1());
         for (auto i = 0u; i < mesh.get_fe().size1(); i++)
         {
-            if (i % 10 == 0)
-                cout << '\r' << int(100 * double(i) / double(mesh.get_fe().size1())) << '%';
+            progress.add_progress();
             parser.set_data(mesh.get_shape<T>(i));
             ansamble_local_matrix(parser.run(mesh.get_coord_fe(i)).asMatrix(), i);
         }
+        progress.stop_process();
     }
     // Учет граничных условий
     template <typename T> void use_boundary_condition(TParser<T> &parser)
     {
+        TProgress progress;
         list<tuple<int, int, int, double>> bc;
 
+        progress.set_process(Message::UsingBoundaryCondition);
         parser.get_boundary_conditions(mesh, bc);
         for (auto [i, type, dir, val]: bc)
             (type == 1) ? solver.setBoundaryCondition(i * mesh.get_freedom() + dir, val) : solver.setLoad(i * mesh.get_freedom() + dir, val);
-
+        progress.stop();
     }
     // Решение СЛАУ
     bool solve_equations(void)
@@ -72,7 +77,7 @@ private:
         return (is_aborted) ? false : ret;
     }
     // Вычисление деформаций и напряжений
-    template <typename T> void calc_results(TParser<T> &parser)
+    template <typename T> void calc_results(TParser<T> &)
     {
 
     }
@@ -97,11 +102,11 @@ private:
     string parse_mesh_file_name(string str)
     {
         if (str[0] not_eq '#')
-            throw TError(Error::Preprocessor);
+            throw TError(Message::Preprocessor);
         str = str.substr(1, str.length());
         str = str.substr(str.find_first_not_of(" \t"), str.length());
         if (str.substr(0, 4) not_eq "mesh" )
-            throw TError(Error::Preprocessor);
+            throw TError(Message::Preprocessor);
         str = str.substr(5, str.length());
         return str.substr(str.find_first_not_of(" \t"), str.length());
     }
@@ -135,10 +140,10 @@ public:
             }
             file.close();
             if (not is_mesh)
-                throw TError(Error::NotMesh);
+                throw TError(Message::NotMesh);
         }
         else
-            throw TError(Error::ReadFile);
+            throw TError(Message::ReadFile);
     }
     void start(void)
     {
@@ -154,7 +159,7 @@ public:
             run<TShape<TShape3d4>>();
             break;
         default:
-            throw TError(Error::IncorrectFE);
+            throw TError(Message::IncorrectFE);
         }
     }
 };

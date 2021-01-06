@@ -24,9 +24,24 @@ SOURCES += \
         core/solver/eigensolver.cpp
 
 HEADERS += \
-    core/error/error.h \
     core/fem/fem.h \
     core/mesh/mesh.h \
+    core/msg/msg.h \
+    core/parser/defs.h \
+    core/parser/node.h \
+    core/parser/parser.h \
+    core/shape/shape.h \
+    core/matrix/matrix.h \
+    core/solver/eigensolver.h \
+    core/solver/solver.h \
+    core/value/value.h
+
+
+
+HEADERS += \
+    core/fem/fem.h \
+    core/mesh/mesh.h \
+    core/message/msg.h \
     core/parser/defs.h \
     core/parser/node.h \
     core/parser/parser.h \

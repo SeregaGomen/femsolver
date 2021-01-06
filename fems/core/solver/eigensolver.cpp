@@ -4,13 +4,14 @@
 #include <Eigen/SparseCholesky>
 #include "mesh/mesh.h"
 #include "solver/eigensolver.h"
-#include "error/error.h"
+#include "msg/msg.h"
 
 
-bool TEigenSolver::solve(vector<double>& r, double, bool&)
+bool TEigenSolver::solve(vector<double> &r, double, bool&)
 {
-    PardisoLLT< SparseMatrix<double> > solver;
-//    SimplicialLLT< SparseMatrix<double> > solver;
+    TProgress progress;
+    PardisoLLT<SparseMatrix<double>> solver;
+//    SimplicialLLT<SparseMatrix<double>> solver;
     VectorXd x,
              load = Map<VectorXd, Unaligned>(loadVector.data(), unsigned(loadVector.size()));
 
@@ -19,21 +20,21 @@ bool TEigenSolver::solve(vector<double>& r, double, bool&)
     // print("matr1.txt");
     ///
 
-//    msg->setProcess(ProcessCode::PreparingSystemEquation);
+    progress.set_process(Message::PreparingSystemEquation);
     solver.compute(matrix);
-//    msg->stop();
+    progress.stop();
     if (solver.info() not_eq Success)
-        throw TError(Error::NotSolution);
+        throw TError(Message::NotSolution);
 
-//    msg->setProcess(ProcessCode::SolutionSystemEquation);
+    progress.set_process(Message::SolutionSystemEquation);
     x = solver.solve(load);
-//    msg->stop();
+    progress.stop();
 
     if(solver.info() not_eq Success)
-        throw TError(Error::NotSolution);
+        throw TError(Message::NotSolution);
 
     r.resize(unsigned(matrix.rows()));
-    for (unsigned i = 0; i < r.size(); i++)
+    for (auto i = 0u; i < r.size(); i++)
         r[i] = x(i);
     return true;
 }
