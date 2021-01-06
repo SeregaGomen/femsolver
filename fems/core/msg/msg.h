@@ -5,87 +5,47 @@
 #include <sstream>
 #include <thread>
 #include <iostream>
+#include <vector>
+#include <iomanip>
 
 enum class Message { Undefined = 0, NotSpecifiedProgram, UndefinedVariable, EmptyProgram, Syntax, Bracket, InvalidIdentifier, VariableOverride, AssignmentArgument,
                      AssignmentResult, UsingArgument, InvalidInitialisation, InvalidOperation, MeshFormat, InvalidFE, ReadFile, InternalError, AsScalar,
                      AsVector, AsMatrix, IncorrectFE, NotSolution, InvalidBoundaryCondition, Preprocessor, NotMesh,
 
-                     GeneratingMatrix, UsingBoundaryCondition, PreparingSystemEquation, FactorizationSystemEquation, SolutionSystemEquation, AnalysingMesh,
-                     WritingResult, GeneratingResult, Timer, Sec };
+                     GeneratingMatrix, UsingBoundaryCondition, PreparingSystemEquation, FactorizationSystemEquation, SolutionSystemEquation, AnalysingMesh, WritingResult,
+                     GeneratingResult, Timer, Sec, FEType, FE1D2, FE2D3, FE2D4, FE2D6, FE3D4, FE3D8, FE3D10, FE2D3P, FE2D4P, FE2D6P, FE3D3S, FE3D4S, FE3D6S, NumNodes,
+                     NumFE };
 
 
 using namespace std;
 
 inline string say_message(Message msg)
 {
-    switch (msg)
-    {
-    case Message::UndefinedVariable:
-        return "Use of undeclared identifier";
-    case Message::NotSpecifiedProgram:
-        return "Program not specified";
-    case Message::EmptyProgram:
-        return "Empty program specified";
-    case Message::Syntax:
-        return "Syntax error";
-    case Message::Bracket:
-        return "Unbalanced brackets";
-    case Message::InvalidIdentifier:
-        return "Incorrect identifier name";
-    case Message::VariableOverride:
-        return "Variable override";
-    case Message::AssignmentArgument:
-        return "Assigning a value to an argument";
-    case Message::AssignmentResult:
-        return "Assigning a value to an result function";
-    case Message::UsingArgument:
-        return "Incorrect use of argument";
-    case Message::InvalidInitialisation:
-        return "Invalid initialization";
-    case Message::InvalidOperation:
-        return "Invalid operation";
-    case Message::MeshFormat:
-        return "Mesh format error";
-    case Message::InvalidFE:
-        return "Invalid finite elemet";
-    case Message::ReadFile:
-        return "Open/Read file error";
-    case Message::InternalError:
-        return "Internal error";
-    case Message::AsScalar:
-        return "Invalid scalar access";
-    case Message::AsVector:
-        return "Invalid vector access";
-    case Message::AsMatrix:
-        return "Invalid matrix access";
-    case Message::IncorrectFE:
-        return "Incorrect FE";
-    case Message::NotSolution:
-        return "System of linear equations not have a solution";
-    case Message::InvalidBoundaryCondition:
-        return "Invalid boundary condition";
-    case Message::Preprocessor:
-        return "Incorrect format of the specified mesh-file name";
-    case Message::NotMesh:
-        return "No mesh set";
-    case Message::Timer:
-        return "Done in: ";
-    case Message::Sec:
-        return " sec.";
-    case Message::AnalysingMesh:
-        return "Analysing of the mesh structure";
-    case Message::GeneratingMatrix:
-        return "Building a global stiffness matrix";
-    case Message::UsingBoundaryCondition:
-        return "Using of boundary conditions";
-    case Message::PreparingSystemEquation:
-        return "Preparing the system of equations";
-    case Message::SolutionSystemEquation:
-        return "Solution of the system of equations";
-    default:
-        break;
-    }
-    return "Undefined message";
+    vector<pair<Message, string>> msg_table { { Message::UndefinedVariable, "Use of undeclared identifier" }, { Message::NotSpecifiedProgram, "Program not specified" },
+                                              { Message::EmptyProgram, "Empty program specified" }, { Message::Syntax, "Syntax error" },
+                                              { Message::Bracket, "Unbalanced brackets" }, { Message::InvalidIdentifier, "Incorrect identifier name" },
+                                              { Message::VariableOverride, "Variable override" }, { Message::AssignmentArgument, "Assigning a value to an argument" },
+                                              { Message::AssignmentResult, "Assigning a value to an result function" }, { Message::UsingArgument, "Incorrect use of argument" },
+                                              { Message::InvalidInitialisation, "Invalid initialization" }, { Message::InvalidOperation, "Invalid operation" },
+                                              { Message::MeshFormat, "Mesh format error" }, { Message::InvalidFE, "Invalid finite elemet" },
+                                              { Message::ReadFile, "Open/Read file error" }, { Message::InternalError, "Internal error" },
+                                              { Message::AsScalar, "Invalid scalar access" }, { Message::AsVector, "Invalid vector access" },
+                                              { Message::AsMatrix, "Invalid matrix access" }, { Message::IncorrectFE, "Incorrect FE" },
+                                              { Message::NotSolution, "System of linear equations not have a solution" }, { Message::InvalidBoundaryCondition, "Invalid boundary condition" },
+                                              { Message::Preprocessor, "Incorrect format of the specified mesh-file name" }, { Message::NotMesh, "No mesh set" },
+                                              { Message::Timer, "Done in: " }, { Message::Sec, " sec." }, { Message::AnalysingMesh, "Analysing of the mesh structure" },
+                                              { Message::GeneratingMatrix, "Building a global stiffness matrix" }, { Message::UsingBoundaryCondition, "Using of boundary conditions" },
+                                              { Message::PreparingSystemEquation, "Preparing the system of equations" }, { Message::SolutionSystemEquation, "Solution of the system of equations" },
+                                              { Message::FEType, "FE type: " }, { Message::FE1D2, "One-dimensional linear element (2 nodes)" }, { Message::FE2D3,"Linear triangular element (3 nodes)" },
+                                              { Message::FE2D4, "Quadrilateral element (4 nodes)" }, { Message::FE2D6, "Quadratic triangular element (6 nodes)" },
+                                              { Message::FE3D4, "Linear tetrahedron (4 nodes)" },  { Message::FE3D8, "Cube element (8 nodes)" },
+                                              { Message::FE3D10, "Quadratic tetrahedron (10 nodes)" }, { Message::FE2D3P, "Plate triangular element (3 nodes)" },
+                                              { Message::FE2D4P, "Plate quadrilateral element (4 nodes)" }, { Message::FE2D6P, "Plate quadrilateral element (6 nodes)" },
+                                              { Message::FE3D3S, "Shell triangular element (3 nodes)" }, { Message::FE3D4S, "Shell quadrilateral element (4 nodes)" },
+                                              { Message::FE3D6S, "Shell triangular element (6 nodes)" }, { Message::NumNodes, "Number of nodes: " },
+                                              { Message::NumFE, "Number of finite elements: " }, { Message::WritingResult, "Writing results" } };
+
+    return find_if(msg_table.begin(), msg_table.end(), [msg](pair<Message, string> i) { return i.first == msg; } )->second;
 }
 
 class TError
@@ -96,7 +56,7 @@ public:
     TError(void) {}
     TError(Message m) : msg{m} {}
     ~TError(void) {}
-    string say(void)
+    inline string say(void)
     {
         return say_message(msg);
     }
@@ -181,14 +141,14 @@ public:
     {
         stringstream ss;
 
-        ss << '\r' << say_message(process_code) << "... 100%" << endl << say_message(Message::Timer) << int(double(static_cast< chrono::duration<double> >(chrono::system_clock::now() - timer).count())) << say_message(Message::Sec) << endl;
+        ss << '\r' << say_message(process_code) << "... 100%" << endl << say_message(Message::Timer) << setprecision(2) << double(static_cast<chrono::duration<double>>(chrono::system_clock::now() - timer).count()) << say_message(Message::Sec) << endl;
         cout << ss.str() << flush;
     }
     virtual void stop(void)
     {
         is_stopped = true;
         this_thread::sleep_for(std::chrono::milliseconds(200));
-        cout << say_message(Message::Timer) << int(double((static_cast< chrono::duration<double> >(chrono::system_clock::now() - timer).count()))) << say_message(Message::Sec) << endl;
+        cout << say_message(Message::Timer) << setprecision(3) << double((static_cast< chrono::duration<double> >(chrono::system_clock::now() - timer).count())) << say_message(Message::Sec) << endl;
     }
 };
 

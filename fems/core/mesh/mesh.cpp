@@ -5,144 +5,57 @@
 #include "shape/shape.h"
 
 // ------------- Определение параметров КЭ ----------------------
-FEType TMesh::decode_mesh_type(int type, int& fe_size, int& be_size, int& dim)
+FEType TMesh::decode_mesh_type(string type, int& be_size, int& fe_size, int& dim)
 {
-    FEType ret;
+    FEType ret = FEType::undefined;
+    auto index = find_if(fe_type_table.begin(), fe_type_table.end(), [type](const auto &it) { return get<0>(it) == type; });
 
-    switch (type)
+    if (index != fe_type_table.end())
     {
-        case 3:
-            ret = FEType::fe2d3;
-            be_size = 2;
-            fe_size = 3;
-            dim = 2;
-            break;
-        case 4:
-            ret = FEType::fe3d4;
-            be_size = 3;
-            fe_size = 4;
-            dim = 3;
-            break;
-        case 6:
-            ret = FEType::fe2d6;
-            be_size = 3;
-            fe_size = 6;
-            dim = 2;
-            break;
-        case 8:
-            ret = FEType::fe3d8;
-            be_size = 4;
-            fe_size = 8;
-            dim = 3;
-            break;
-        case 10:
-            ret = FEType::fe3d10;
-            be_size = 6;
-            fe_size = 10;
-            dim = 3;
-            break;
-        case 24:
-            ret = FEType::fe2d4;
-            be_size = 2;
-            fe_size = 4;
-            dim = 2;
-            break;
-        case 34:
-            ret = FEType::fe1d2;
-            be_size = 1;
-            fe_size = 2;
-            dim = 1;
-            break;
-        case 123:
-            ret = FEType::fe2d3p;
-            be_size = 0;
-            fe_size = 3;
-            dim = 2;
-            break;
-        case 124:
-            ret = FEType::fe2d4p;
-            be_size = 0;
-            fe_size = 4;
-            dim = 2;
-            break;
-        case 125:
-            ret = FEType::fe2d6p;
-            be_size = 0;
-            fe_size = 6;
-            dim = 2;
-            break;
-        case 223:
-            ret = FEType::fe3d3s;
-            be_size = 0;
-            fe_size = 3;
-            dim = 3;
-            break;
-        case 224:
-            ret = FEType::fe3d4s;
-            be_size = 0;
-            fe_size = 4;
-            dim = 3;
-            break;
-        case 225:
-            ret = FEType::fe3d6s;
-            be_size = 0;
-            fe_size = 6;
-            dim = 3;
-            break;
-        default:
-            fe_size = be_size = dim = 0;
-            ret = FEType::undefined;
+        ret = get<1>(*index);
+        be_size = get<2>(*index);
+        fe_size = get<3>(*index);
+        dim = get<4>(*index);
     }
     return ret;
 }
 
 void TMesh::set_mesh_file(string path, string name)
 {
-    ifstream file;
+    string fetype;
     int val,
         fe_size,
         be_size,
         dim;
+    ifstream file;
 
-    file.exceptions (std::ifstream::failbit | std::ifstream::badbit);
+    file.exceptions(std::ifstream::failbit | std::ifstream::badbit);
     try
     {
         if (filesystem::exists(name))
             file.open(name);
         else
             file.open(path + "/" + name);
-        file >> val;
-        if ((type = decode_mesh_type(val, fe_size, be_size, dim)) == FEType::undefined)
-        {
-            file.close();
+        file >> fetype;
+        if ((type = decode_mesh_type(fetype, be_size, fe_size, dim)) == FEType::undefined)
             throw TError(Message::MeshFormat);
-        }
         file >> val;
         if (val <= 0 or dim < 1 or dim > 3)
-        {
-            file.close();
             throw TError(Message::MeshFormat);
-        }
         x.resize(val, dim);
         for (auto i = 0; i < val; i++)
             for (auto j = 0; j < dim; j++)
                 file >> x(i, j);
         file >> val;
         if (val == 0)
-        {
-            file.close();
             throw TError(Message::MeshFormat);
-        }
         fe.resize(val, fe_size);
         for (auto i = 0; i < val; i++)
             for (auto j = 0; j < fe_size; j++)
                 file >> fe(i, j);
         file >> val;
         if (val == 0 and (type == FEType::fe2d3 or type == FEType::fe2d4 or type == FEType::fe3d4 or type == FEType::fe3d8))
-        {
-            file.close();
             throw TError(Message::MeshFormat);
-        }
         if ((type == FEType::fe2d3p or type == FEType::fe2d4p or type == FEType::fe2d6) or (type == FEType::fe3d3s or type == FEType::fe3d4s or type == FEType::fe3d6s))
             be = fe;
         else // if (feDim not_eq 1)
@@ -153,10 +66,12 @@ void TMesh::set_mesh_file(string path, string name)
                     file >> be(i, j);
         }
         file.close();
+        cout << *this << endl;
         create_mesh_map();
     }
     catch (fstream::failure&)
     {
+        file.close();
         throw TError(Message::ReadFile);
     }
 }
@@ -220,4 +135,55 @@ void TMesh::create_mesh_map(void)
     for (unsigned i = 0; i < mesh_map.size(); i++)
         sort(mesh_map[i].begin(), mesh_map[i].end(), [](unsigned k, unsigned l) -> bool{ return (k < l); });
     progress.stop_process();
+}
+
+string TMesh::fe_name(void)
+{
+    vector<pair<FEType, Message>> table{ { FEType::fe1d2, Message::FE1D2 }, { FEType::fe2d3, Message::FE2D3 }, { FEType::fe2d4, Message::FE2D4 },
+                                         { FEType::fe2d6, Message::FE2D6 }, { FEType::fe3d4, Message::FE3D4 }, { FEType::fe3d8, Message::FE3D8 },
+                                         { FEType::fe3d10, Message::FE3D10 }, { FEType::fe2d3p, Message::FE2D3P }, { FEType::fe2d4p, Message::FE2D4P },
+                                         { FEType::fe2d6p, Message::FE2D6P }, { FEType::fe3d3s, Message::FE3D3S }, { FEType::fe3d4s, Message::FE3D4S },
+                                         { FEType::fe3d6s, Message::FE3D6S } };
+
+    return say_message(find_if(table.begin(), table.end(), [this](pair<FEType, Message> i) { return i.first == this->type; } )->second);
+}
+
+ostream &operator << (ostream &out, TMesh &r)
+{
+    out << say_message(Message::FEType) << r.fe_name() << endl;
+    out << say_message(Message::NumNodes) << r.x.size1() << endl;
+    out << say_message(Message::NumFE) << r.fe.size1() << endl;
+    return out;
+}
+
+void TMesh::write(ofstream &out)
+{
+    out << "Mesh" << endl;
+    out << get<0>(*find_if(fe_type_table.begin(), fe_type_table.end(), [this](const auto &it) { return get<1>(it) == this->type; }))  << endl;
+    out << x.size1() << endl;
+    for (auto i = 0u; i < x.size1(); i++)
+    {
+        for (auto j = 0u; j < x.size2(); j++)
+            out << x(i, j) << ' ';
+        out << endl;
+    }
+    out << fe.size1() << endl;
+    for (auto i = 0u; i < fe.size1(); i++)
+    {
+        for (auto j = 0u; j < fe.size2(); j++)
+            out << fe(i, j) << ' ';
+        out << endl;
+    }
+    if (is_plate() or is_shell())
+        out << 0 << endl;
+    else
+    {
+        out << be.size1() << endl;
+        for (unsigned i = 0; i < be.size1(); i++)
+        {
+            for (unsigned j = 0; j < be.size2(); j++)
+                out << be(i, j) << ' ';
+            out << endl;
+        }
+    }
 }

@@ -11,13 +11,29 @@ enum class FEType { undefined  = 0, fe1d2, fe2d3, fe2d4, fe2d6, fe2d3p, fe2d4p, 
 class TMesh
 {
 private:
+    vector<tuple<string, FEType, int, int, int>> fe_type_table {
+        { "fe1d2", FEType::fe1d2, 1, 2, 1 },
+        { "fe2d3", FEType::fe2d3, 2, 3, 2 },
+        { "fe2d4", FEType::fe2d4, 2, 4, 2 },
+        { "fe2d6", FEType::fe2d6, 3, 6, 2 },
+        { "fe3d4", FEType::fe3d4, 3, 4, 3 },
+        { "fe3d8", FEType::fe3d8, 4, 8, 3 },
+        { "fe3d10", FEType::fe3d8, 6, 10, 3 },
+        { "fe2d3p", FEType::fe2d3p, 0, 3, 2 },
+        { "fe2d4p", FEType::fe2d4p, 0, 4, 2 },
+        { "fe2d6p", FEType::fe2d6p, 0, 6, 2 },
+        { "fe3d3s", FEType::fe3d3s, 0, 3, 3 },
+        { "fe3d4s", FEType::fe3d4s, 0, 4, 3 },
+        { "fe3d6s", FEType::fe3d6s, 0, 6, 3 },
+    };
     FEType type = FEType::undefined;
     vector<vector<int>> mesh_map;
     matrix<double> x;
     matrix<int> fe;
     matrix<int> be;
-    FEType decode_mesh_type(int, int&, int&, int&);
+    FEType decode_mesh_type(string, int&, int&, int&);
     void create_mesh_map(void);
+    string fe_name(void);
 public:
     TMesh(void) noexcept {}
     ~TMesh(void) noexcept = default;
@@ -77,33 +93,28 @@ public:
         }
         return res;
     }
+    friend ostream &operator << (ostream&, TMesh&);
+    void write(ofstream&);
+    bool is_1d(void)
+    {
+        return type == FEType::fe1d2 ? true : false;
+    }
+    bool is_2d(void)
+    {
+        return type == FEType::fe2d3 or type == FEType::fe2d4 or type == FEType::fe2d6 ? true : false;
+    }
+    bool is_3d(void)
+    {
+        return type == FEType::fe3d4 or type == FEType::fe3d8 or type == FEType::fe3d10 ? true : false;
+    }
+    bool is_plate(void)
+    {
+        return type == FEType::fe2d3p or type == FEType::fe2d4p or type == FEType::fe2d6p ? true : false;
+    }
+    bool is_shell(void)
+    {
+        return type == FEType::fe3d3s or type == FEType::fe3d4s or type == FEType::fe3d6s ? true : false;
+    }
 };
-
-
-//void TShape::create(matrix<double>& px)
-//{
-//    using namespace Eigen;
-
-//    MatrixXd A(size, size);
-//    VectorXd b(size);
-
-//    x = px;
-//    c.resize(size, size);
-//    for (unsigned i = 0; i < size; i++)
-//    {
-//        for (unsigned j = 0; j < size; j++)
-//        {
-//            for (unsigned k = 0; k < size; k++)
-//                A(j, k) = shape_coeff(j, k);
-//            b(j) = (i == j) ? 1.0 : 0.0;
-//        }
-//        if (A.determinant() == 0.0)
-//            throw ErrorCode::EIncorrectFE;
-//        b = A.colPivHouseholderQr().solve(b);
-//        for (unsigned j = 0; j < size; j++)
-//            c(j, i) = b(j);
-//    }
-//}
-//--------------------------------------------------------------
 
 #endif // TMESH_H

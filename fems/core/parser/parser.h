@@ -182,6 +182,14 @@ public:
         return functional.begin()->second.value();
     }
     void get_boundary_conditions(TMesh&, list<tuple<int, int, int, double>>&);
+    auto &get_result_table(void) const
+    {
+        return result;
+    }
+    auto &get_function_table(void) const
+    {
+        return function;
+    }
 };
 
 template <class T> void TParser<T>::compile(void)

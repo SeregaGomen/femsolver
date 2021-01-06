@@ -9,6 +9,7 @@
 #include "shape/shape.h"
 #include "parser/parser.h"
 #include "shape/shape.h"
+#include "analyse/analyse.h"
 
 using namespace std;
 
@@ -24,17 +25,23 @@ private:
     TMesh mesh;
     // Функционал и разрешающие соотношения
     list<string> program;
+    // Результаты расчета
+    TResultList results;
     // Запуск вычислительного процесса
     template <typename T> void run(void)
     {
         TParser<T> parser;
+        vector<double> res;
 
         parser.set_program(program);
         solver.setup(mesh);
         create_global_matrix(parser);
         use_boundary_condition(parser);
-        if (solve_equations())
-            calc_results(parser);
+        if (solve_equations(res))
+        {
+            calc_results(parser, res);
+            save_result("results.res");
+        }
     }
     // Формирование глобальной матрицы жесткости
     template <typename T> void create_global_matrix(TParser<T> &parser)
@@ -63,23 +70,31 @@ private:
         progress.stop();
     }
     // Решение СЛАУ
-    bool solve_equations(void)
+    bool solve_equations(vector<double> &res)
     {
         double eps = 1.0E-10;
         bool is_aborted = false,
              ret;
-        vector<double> res;
 
         //solver.print("matrix.res");
         ret = solver.solve(res, eps, is_aborted);
-        if (!is_aborted and ret)
-            cout << res;
+//        if (!is_aborted and ret)
+//            cout << res;
         return (is_aborted) ? false : ret;
     }
     // Вычисление деформаций и напряжений
-    template <typename T> void calc_results(TParser<T> &)
+    template <typename T> void calc_results(TParser<T> &parser, vector<double> &u)
     {
+        matrix<double> res(parser.get_result_table().size() + parser.get_function_table().size(), mesh.get_x().size1());
 
+        // Копируем результаты расчета (перемещения)
+        for (auto i = 0u; i < mesh.get_x().size1(); i++)
+            for (auto j = 0; j < mesh.get_freedom(); j++)
+                res[j][i] = u[i * mesh.get_freedom() + j];
+
+        // Cохраняем результаты
+        for (auto i = 0u; i < res.size1(); i++)
+            results.set_result(res[i], (int)res.size2(), i < parser.get_result_table().size() ? parser.get_result_table()[i].first : parser.get_function_table()[i - mesh.get_freedom()].first);
     }
     // Ансамблирование локальной матрицы жесткости к глобальной
     void ansamble_local_matrix(const matrix<double> &lm, unsigned i)
@@ -160,6 +175,33 @@ public:
             break;
         default:
             throw TError(Message::IncorrectFE);
+        }
+    }
+    void save_result(string name)
+    {
+        ofstream out;
+        TProgress progress;
+
+        out.exceptions(std::ifstream::failbit | std::ifstream::badbit);
+        try
+        {
+            out.open(name);
+            out.precision(16);
+
+            progress.set_process(Message::WritingResult);
+            // Запись подписи
+            out << "Core QFEM results file" << endl;
+            // Запись сетки
+            mesh.write(out);
+            // Запись результатов
+            results.write(out);
+            out.close();
+            progress.stop();
+        }
+        catch (fstream::failure&)
+        {
+            progress.stop();
+            throw TError(Message::ReadFile);
         }
     }
 };

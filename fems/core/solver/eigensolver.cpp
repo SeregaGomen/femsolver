@@ -33,9 +33,12 @@ bool TEigenSolver::solve(vector<double> &r, double, bool&)
     if(solver.info() not_eq Success)
         throw TError(Message::NotSolution);
 
+//    chrono::system_clock::time_point timer = chrono::system_clock::now();
     r.resize(unsigned(matrix.rows()));
     for (auto i = 0u; i < r.size(); i++)
         r[i] = x(i);
+//    cout << endl << "Time: " << (double(static_cast< chrono::duration<double> >(chrono::system_clock::now() - timer).count())) << " sec." << endl;
+
     return true;
 }
 

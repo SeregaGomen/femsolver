@@ -24,6 +24,7 @@ SOURCES += \
         core/solver/eigensolver.cpp
 
 HEADERS += \
+    core/analyse/analyse.h \
     core/fem/fem.h \
     core/mesh/mesh.h \
     core/msg/msg.h \
