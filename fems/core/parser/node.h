@@ -28,7 +28,7 @@ public:
     TNode(shared_ptr<TNode> lhs,  Token t, shared_ptr<TNode> rhs) : tok{t}, left{make_shared<TNode>(*lhs)}, right{make_shared<TNode>(*rhs)} {}
     TNode(const TNode &rhs) : tok{rhs.tok}, val{rhs.val}, left{rhs.left}, right{rhs.right} {}
     ~TNode(void) noexcept {}
-    TValue<T> value(void)
+    TValue<T> value(void) const
     {
         switch (tok)
         {
@@ -113,7 +113,7 @@ public:
     {
         fe_coord = fec;
     }
-    TValue<T> integral(const shared_ptr<TNode> code)
+    TValue<T> integral(const shared_ptr<TNode> code) const
     {
         double jacobian;
         matrix<double> res(T::size() * T::freedom(), T::size() * T::freedom() + 1),

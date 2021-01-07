@@ -162,6 +162,7 @@ public:
     }
     bool write(ofstream& out)
     {
+        set_current_solution_time();
         out << "Results" << endl;
         out << sdt << endl;
         out << result.size() << endl;

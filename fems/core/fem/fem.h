@@ -90,13 +90,14 @@ private:
         TProgress progress;
         matrix<double> res(parser.get_result_table().size() + parser.get_function_table().size(), mesh.get_x().size1()),
                        fe_coord;
-        vector<double> fe_u;
-        TValue<T> value;
+        vector<double> fe_u,
+                       value;
+        vector<int> counter(mesh.get_x().size1()); // Счетчик кол-ва вхождения узлов для осреднения результатов
 
         // Копируем результаты расчета (перемещения)
         for (auto i = 0u; i < mesh.get_x().size1(); i++)
             for (auto j = 0; j < mesh.get_freedom(); j++)
-                res[j][i] = u[i * mesh.get_freedom() + j];
+                res(j, i) = u[i * mesh.get_freedom() + j];
 
         // Вычисляем вспомогательные функции (деформации и напряжения)
         progress.set_process(Message::GeneratingResult, 1, (int)mesh.get_fe().size1());
@@ -111,15 +112,32 @@ private:
                     fe_u[j * mesh.get_freedom() + k] = u[mesh.get_freedom() * mesh.get_fe(i, j) + k];
             // Загружаем результирующие функции (перемещения)
             parser.set_data(mesh.get_shape<T>(i), fe_u);
-
             for (auto j = 0u; j < parser.get_function_table().size(); j++)
             {
-                auto val = parser.get_function_table()[i].second;
+                for (auto k = 0u; k < mesh.get_fe().size2(); k++)
+                {
+                    TValue<T>::x[0] = fe_coord(k, 0);
+                    TValue<T>::x[1] = fe_coord(k, 1);
+                    TValue<T>::x[2] = fe_coord(k, 2);
+                    value = parser.get_function_table()[j].second.value().asVector();
+//                    res(mesh.get_freedom() + j, mesh.get_fe(i, k)) += value[k];
 
-                value = val.value();
+                    double sum = 0;
+                    for (auto m: value)
+                        sum += m;
+                    res(mesh.get_freedom() + j, mesh.get_fe(i, k)) += sum;
+
+                    if (j == 0)
+                        counter[mesh.get_fe(i, k)]++;
+                }
             }
         }
         progress.stop_process();
+
+        // Осредняем результаты
+        for (auto i = mesh.get_freedom(); i < (int)res.size1(); i++)
+            for (auto j = 0u; j< mesh.get_x().size1(); j++)
+                res[i][j] /= counter[j];
 
         // Cохраняем результаты
         for (auto i = 0u; i < res.size1(); i++)
@@ -219,7 +237,7 @@ public:
 
             progress.set_process(Message::WritingResult);
             // Запись подписи
-            out << "Core QFEM results file" << endl;
+            out << "FEM Solver Results File" << endl;
             // Запись сетки
             mesh.write(out);
             // Запись результатов
