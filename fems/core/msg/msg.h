@@ -36,14 +36,15 @@ inline string say_message(Message msg)
                                               { Message::Timer, "Done in: " }, { Message::Sec, " sec." }, { Message::AnalysingMesh, "Analysing of the mesh structure" },
                                               { Message::GeneratingMatrix, "Building a global stiffness matrix" }, { Message::UsingBoundaryCondition, "Using of boundary conditions" },
                                               { Message::PreparingSystemEquation, "Preparing the system of equations" }, { Message::SolutionSystemEquation, "Solution of the system of equations" },
-                                              { Message::FEType, "FE type: " }, { Message::FE1D2, "One-dimensional linear element (2 nodes)" }, { Message::FE2D3,"Linear triangular element (3 nodes)" },
-                                              { Message::FE2D4, "Quadrilateral element (4 nodes)" }, { Message::FE2D6, "Quadratic triangular element (6 nodes)" },
-                                              { Message::FE3D4, "Linear tetrahedron (4 nodes)" },  { Message::FE3D8, "Cube element (8 nodes)" },
-                                              { Message::FE3D10, "Quadratic tetrahedron (10 nodes)" }, { Message::FE2D3P, "Plate triangular element (3 nodes)" },
-                                              { Message::FE2D4P, "Plate quadrilateral element (4 nodes)" }, { Message::FE2D6P, "Plate quadrilateral element (6 nodes)" },
-                                              { Message::FE3D3S, "Shell triangular element (3 nodes)" }, { Message::FE3D4S, "Shell quadrilateral element (4 nodes)" },
-                                              { Message::FE3D6S, "Shell triangular element (6 nodes)" }, { Message::NumNodes, "Number of nodes: " },
-                                              { Message::NumFE, "Number of finite elements: " }, { Message::WritingResult, "Writing results" } };
+                                              { Message::FEType, "FE type - " }, { Message::FE1D2, "one-dimensional linear element (2 nodes)" }, { Message::FE2D3,"linear triangular element (3 nodes)" },
+                                              { Message::FE2D4, "quadrilateral element (4 nodes)" }, { Message::FE2D6, "quadratic triangular element (6 nodes)" },
+                                              { Message::FE3D4, "linear tetrahedron (4 nodes)" },  { Message::FE3D8, "cube element (8 nodes)" },
+                                              { Message::FE3D10, "quadratic tetrahedron (10 nodes)" }, { Message::FE2D3P, "plate triangular element (3 nodes)" },
+                                              { Message::FE2D4P, "plate quadrilateral element (4 nodes)" }, { Message::FE2D6P, "plate quadrilateral element (6 nodes)" },
+                                              { Message::FE3D3S, "shell triangular element (3 nodes)" }, { Message::FE3D4S, "shell quadrilateral element (4 nodes)" },
+                                              { Message::FE3D6S, "shell triangular element (6 nodes)" }, { Message::NumNodes, "Number of nodes - " },
+                                              { Message::NumFE, "Number of finite elements - " }, { Message::WritingResult, "Writing results" },
+                                              { Message::GeneratingResult, "Calculation of results" } };
 
     return find_if(msg_table.begin(), msg_table.end(), [msg](pair<Message, string> i) { return i.first == msg; } )->second;
 }

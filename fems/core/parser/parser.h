@@ -162,7 +162,7 @@ public:
         program = prog;
         compile();
     }
-    void set_data(const vector<T> &v) noexcept
+    void set_data(const vector<T> &v, const vector<double> &f = {} ) noexcept
     {
         vector<double> c(T::size());
 
@@ -171,7 +171,7 @@ public:
             vector<T> fun(T::size() * T::freedom(), c);
 
             for (auto j = 0; j < T::size(); j++)
-                fun[j * T::freedom() + i] = v[j];
+                fun[j * T::freedom() + i] = v[j] * (f.size() ? f[j * T::freedom() + i] : 1);
 
             result[i].second = fun;
         }

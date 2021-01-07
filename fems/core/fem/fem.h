@@ -19,6 +19,8 @@ using namespace std;
 template <class S> class TFEM
 {
 private:
+    // Имя файла с программой расчета
+    string prog_name;
     // Решатель СЛАУ
     S solver;
     // Сетка
@@ -40,7 +42,7 @@ private:
         if (solve_equations(res))
         {
             calc_results(parser, res);
-            save_result("results.res");
+            save_result(prog_name.substr(0, prog_name.find_last_of(".")) + ".res");
         }
     }
     // Формирование глобальной матрицы жесткости
@@ -85,12 +87,39 @@ private:
     // Вычисление деформаций и напряжений
     template <typename T> void calc_results(TParser<T> &parser, vector<double> &u)
     {
-        matrix<double> res(parser.get_result_table().size() + parser.get_function_table().size(), mesh.get_x().size1());
+        TProgress progress;
+        matrix<double> res(parser.get_result_table().size() + parser.get_function_table().size(), mesh.get_x().size1()),
+                       fe_coord;
+        vector<double> fe_u;
+        TValue<T> value;
 
         // Копируем результаты расчета (перемещения)
         for (auto i = 0u; i < mesh.get_x().size1(); i++)
             for (auto j = 0; j < mesh.get_freedom(); j++)
                 res[j][i] = u[i * mesh.get_freedom() + j];
+
+        // Вычисляем вспомогательные функции (деформации и напряжения)
+        progress.set_process(Message::GeneratingResult, 1, (int)mesh.get_fe().size1());
+        for (auto i = 0; i < mesh.get_fe().size1(); i++)
+        {
+            progress.add_progress();
+            fe_coord = mesh.get_coord_fe(i);
+            // Формируем вектор перемещений для текущего КЭ
+            fe_u.resize(mesh.get_fe().size2() * mesh.get_freedom());
+            for (auto j = 0u; j < mesh.get_fe().size2(); j++)
+                for (auto k = 0; k < mesh.get_freedom(); k++)
+                    fe_u[j * mesh.get_freedom() + k] = u[mesh.get_freedom() * mesh.get_fe(i, j) + k];
+            // Загружаем результирующие функции (перемещения)
+            parser.set_data(mesh.get_shape<T>(i), fe_u);
+
+            for (auto j = 0u; j < parser.get_function_table().size(); j++)
+            {
+                auto val = parser.get_function_table()[i].second;
+
+                value = val.value();
+            }
+        }
+        progress.stop_process();
 
         // Cохраняем результаты
         for (auto i = 0u; i < res.size1(); i++)
@@ -130,7 +159,7 @@ public:
     ~TFEM(void) noexcept = default;
     void set_program(string name)
     {
-        fstream file(name);
+        fstream file(prog_name = name);
         string str;
         int pos;
         bool is_mesh = false;

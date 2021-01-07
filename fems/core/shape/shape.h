@@ -251,6 +251,13 @@ public:
         for_each(ret.c.begin(), ret.c.end(), [](auto &i){ i = -i; });
         return ret;
     }
+    friend TShape operator * (const TShape &lhs, double rhs)
+    {
+        TShape ret(lhs);
+
+        for_each(ret.c.begin(), ret.c.end(), [rhs](auto &i){ i *= rhs; });
+        return ret;
+    }
     friend ostream &operator << (ostream &out, const TShape &rhs)
     {
         out << "( ";
