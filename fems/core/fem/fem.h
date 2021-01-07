@@ -44,6 +44,7 @@ private:
         {
             calc_results(parser, res);
             save_result(prog_name.substr(0, prog_name.find_last_of(".")) + ".res");
+            print_result_summary();
         }
     }
     // Формирование глобальной матрицы жесткости
@@ -236,6 +237,23 @@ public:
             progress.stop();
             throw TError(Message::ReadFile);
         }
+    }
+    // Вывод рез-тов по каждой функции на экран
+    void print_result_summary(double t = 0)
+    {
+        int width = 15,
+            precision = 8;
+
+        cout << "---------------------------------------------------------------------" << endl;
+        cout.setf(ios::left);
+        cout << setw(10) << ' ' << setw(width) << "\tmin" << ' ' << setw(width) << "\tmax" << endl;
+        cout.flags (ios::floatfield | ios::scientific | ios::showpos);
+        for (unsigned i = 0; i < results.size(); i++)
+            if (results[i].get_time() == t)
+                cout << setw(10) << results[i].get_name() << '\t' << std::scientific << setw(width) <<
+                        setprecision(precision) << results[i].min() << '\t' << setw(width) << results[i].max() << endl;
+        cout.unsetf(ios::showpos);
+        cout << "---------------------------------------------------------------------" << endl;
     }
 };
 
