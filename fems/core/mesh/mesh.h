@@ -72,6 +72,7 @@ public:
     }
     void set_mesh_file(string, string);
     matrix<double> get_coord_fe(int);
+    array<double, 3> get_coord_fe(int, int);
     template <class T> vector<T> get_shape(int i)
     {
         matrix<double> px = get_coord_fe(i),

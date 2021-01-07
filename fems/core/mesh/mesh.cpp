@@ -86,6 +86,15 @@ matrix<double> TMesh::get_coord_fe(int index)
     return coord;
 }
 
+array<double, 3> TMesh::get_coord_fe(int index, int vertex)
+{
+    array<double, 3> coord;
+
+    for (auto i = 0u; i < x.size2(); i++)
+        coord[i] = x(fe(index, vertex), i);
+    return coord;
+}
+
 int TMesh::get_freedom(void)
 {
     int ret = 0;

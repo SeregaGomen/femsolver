@@ -2,12 +2,10 @@
 argument x, y
 result u, v
 constant E = 203200, m = 0.3, K = E / (1 - m * m), G = E / (2 + 2 * m)
-function U, V, Exx, Eyy, Exy, Sxx, Syy, Sxy
+function Exx, Eyy, Exy, Sxx, Syy, Sxy
 load X, Y
 functional W
 
-U = u
-V = v
 Exx = diff(u, x)
 Eyy = diff(v, y)
 Exy = diff(u, y) + diff(v, x)
