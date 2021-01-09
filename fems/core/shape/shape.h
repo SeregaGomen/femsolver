@@ -38,21 +38,25 @@ struct TShape1d2
     {
         return 1;
     }
-    inline static vector<double> w(void)
+    inline static constexpr int quadrature_degree(void)
     {
-        return { 0.555555555566666, 0.888888888888889, 0.555555555566666 };
+        return 3;
     }
-    inline static vector<double> xi(void)
+    inline static double w(int i)
     {
-        return { -0.774596669241483, 0, 0.774596669241483 };
+        return array<double, 3>{ 0.555555555566666, 0.888888888888889, 0.555555555566666 }[i];
+    }
+    inline static double xi(int i)
+    {
+        return array<double, 3>{ -0.774596669241483, 0, 0.774596669241483 }[i];
     }
     inline static double coeff(matrix<double> &x, int i, int j)
     {
-        return vector<double>{ 1.0, x(i, 0) }[j];
+        return array<double, 2>{ 1.0, x(i, 0) }[j];
     }
     inline static array<double, 3> x(int i, const matrix<double> &x)
     {
-        return { 0.5 * x(0, 0) * (1.0 - xi()[i]) + 0.5 * x(1, 0) * (1.0 + xi()[i]), 0, 0 };
+        return { 0.5 * x(0, 0) * (1.0 - xi(i)) + 0.5 * x(1, 0) * (1.0 + xi(i)), 0, 0 };
     }
 };
 
@@ -99,17 +103,21 @@ struct TShape2d3
     {
         return 2;
     }
-    inline static vector<double> w(void)
+    inline static constexpr int quadrature_degree(void)
     {
-        return { 0.166666666667, 0.166666666667, 0.166666666667 };
+        return 3;
     }
-    inline static vector<double> xi(void)
+    inline static double w(int i)
     {
-        return { 0.0, 0.5, 0.5 };
+        return array<double, 3>{ 0.166666666667, 0.166666666667, 0.166666666667 }[i];
     }
-    inline static vector<double> eta(void)
+    inline static double xi(int i)
     {
-        return { 0.5, 0.0, 0.5 };
+        return array<double, 3>{ 0.0, 0.5, 0.5 }[i];
+    }
+    inline static double eta(int i)
+    {
+        return array<double, 3>{ 0.5, 0.0, 0.5 }[i];
     }
     inline static double coeff(matrix<double> &x, int i, int j)
     {
@@ -117,7 +125,7 @@ struct TShape2d3
     }
     inline static array<double, 3> x(int i, const matrix<double> &x)
     {
-        return { x(0, 0) * (1.0 - xi()[i] - eta()[i]) + x(1, 0) * xi()[i] + x(2, 0) * eta()[i], x(0, 1) * (1.0 - xi()[i] - eta()[i]) + x(1, 1) * xi()[i] + x(2, 1) * eta()[i], 0 };
+        return { x(0, 0) * (1.0 - xi(i) - eta(i)) + x(1, 0) * xi(i) + x(2, 0) * eta(i), x(0, 1) * (1.0 - xi(i) - eta(i)) + x(1, 1) * xi(i) + x(2, 1) * eta(i), 0 };
     }
 };
 
@@ -168,21 +176,25 @@ struct TShape3d4
     {
         return 3;
     }
-    inline static vector<double> w(void)
+    inline static constexpr int quadrature_degree(void)
     {
-        return { -0.13333333333, 0.075, 0.075, 0.075, 0.075 };
+        return 5;
     }
-    inline static vector<double> xi(void)
+    inline static double w(int i)
     {
-        return { 0.25, 0.5, 0.16666666667, 0.16666666667, 0.16666666667 };
+        return array<double, 5>{ -0.13333333333, 0.075, 0.075, 0.075, 0.075 }[i];
     }
-    inline static vector<double> eta(void)
+    inline static double xi(int i)
     {
-        return { 0.25, 0.16666666667, 0.5, 0.16666666667, 0.16666666667 };
+        return array<double, 5>{ 0.25, 0.5, 0.16666666667, 0.16666666667, 0.16666666667 }[i];
     }
-    inline static vector<double> psi(void)
+    inline static double eta(int i)
     {
-        return { 0.25, 0.16666666667, 0.16666666667, 0.5, 0.16666666667 };
+        return array<double, 5>{ 0.25, 0.16666666667, 0.5, 0.16666666667, 0.16666666667 }[i];
+    }
+    inline static double psi(int i)
+    {
+        return array<double, 5>{ 0.25, 0.16666666667, 0.16666666667, 0.5, 0.16666666667 }[i];
     }
     inline static double coeff(matrix<double> &x, int i, int j)
     {
@@ -190,9 +202,9 @@ struct TShape3d4
     }
     inline static array<double, 3> x(int i, const matrix<double> &x)
     {
-        return { x(0, 0) * (1.0 - xi()[i] - eta()[i] - psi()[i]) + x(1, 0) * xi()[i] + x(2, 0) * eta()[i] + x(3, 0) * psi()[i],
-                 x(0, 1) * (1.0 - xi()[i] - eta()[i] - psi()[i]) + x(1, 1) * xi()[i] + x(2, 1) * eta()[i] + x(3, 1) * psi()[i],
-                 x(0, 2) * (1.0 - xi()[i] - eta()[i] - psi()[i]) + x(1, 2) * xi()[i] + x(2, 2) * eta()[i] + x(3, 2) * psi()[i] };
+        return { x(0, 0) * (1.0 - xi(i) - eta(i) - psi(i)) + x(1, 0) * xi(i) + x(2, 0) * eta(i) + x(3, 0) * psi(i),
+                 x(0, 1) * (1.0 - xi(i) - eta(i) - psi(i)) + x(1, 1) * xi(i) + x(2, 1) * eta(i) + x(3, 1) * psi(i),
+                 x(0, 2) * (1.0 - xi(i) - eta(i) - psi(i)) + x(1, 2) * xi(i) + x(2, 2) * eta(i) + x(3, 2) * psi(i) };
     }
 };
 
@@ -224,6 +236,10 @@ public:
     {
         return T::jacobi(i, x);
     }
+    inline static constexpr int quadrature_degree(void)
+    {
+        return T::quadrature_degree();
+    }
     inline static constexpr int size(void) noexcept
     {
         return T::size();
@@ -232,9 +248,9 @@ public:
     {
         return T::freedom();
     }
-    inline static vector<double> w(void)
+    inline static double w(int i)
     {
-        return T::w();
+        return T::w(i);
     }
     inline static double coeff(matrix<double> &x, int i, int j)
     {

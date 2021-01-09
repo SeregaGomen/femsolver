@@ -118,14 +118,14 @@ public:
         double jacobian;
         matrix<double> res(T::size() * T::freedom(), T::size() * T::freedom() + 1);
 
-        for (auto i = 0u; i < T::w().size(); i++)
+        for (auto i = 0; i < T::quadrature_degree(); i++)
         {
             // Якобиан
             jacobian = det( T::jacobi(i, fe_coord));
             // Интегрирование по заданным узлам
 //            TValue<T>::x = T::x(i, inverted_jacobi);
             TValue<T>::x = T::x(i, fe_coord);
-            res += code->value().asMatrix() * T::w()[i] * abs(jacobian);
+            res += code->value().asMatrix() * T::w(i) * abs(jacobian);
         }
         return TValue<T>(res);
     }
