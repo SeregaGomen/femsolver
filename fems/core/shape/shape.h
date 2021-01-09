@@ -129,6 +129,76 @@ struct TShape2d3
     }
 };
 
+// Параметры функции формы линейного треугольного конечного элемента
+// N(x, y) = c0 + c1 * x + c2 * y + c3 * x * y
+struct TShape2d4
+{
+    // Дифференцирование
+    inline static vector<double> diff(const vector<double> &c, Direct direct)
+    {
+        vector<double> ret;
+
+        if (direct == Direct::X)
+            ret = {c[1], 0, c[3], 0};
+        else if (direct == Direct::Y)
+            ret = {c[2], c[3], 0, 0};
+        else
+            throw TError(Message::InternalError);
+        return ret;
+    }
+    inline static double value(const vector<double> &c, const array<double, 3> &x) noexcept
+    {
+        return (c.size() == 1) ? c[0] : c[0] + c[1] * x[0] + c[2] * x[1] + c[3] * x[0] * x[1];
+    }
+    inline static matrix<double> jacobi(int i, const matrix<double> &x)
+    {
+        matrix<double> jacobi(2, 2);
+        vector<double> d_xi{-0.25*(1.0 - eta(i)), 0.25*(1.0 - eta(i)), 0.25*(1.0 + eta(i)), -0.25*(1.0 + eta(i)) },
+                       d_eta{ -0.25*(1.0 - xi(i)), -0.25*(1.0 + xi(i)), 0.25*(1.0 + xi(i)), 0.25*(1.0 - xi(i)) };
+
+        for (auto j = 0; j < 2; j++)
+            for (auto k = 0; k < size(); k++)
+            {
+                jacobi(0, j) += d_xi[k] * x(k, j);
+                jacobi(1, j) += d_eta[k] * x(k, j);
+            }
+        return jacobi;
+    }
+    inline static constexpr int size(void) noexcept
+    {
+        return 4;
+    }
+    inline static constexpr int freedom(void) noexcept
+    {
+        return 2;
+    }
+    inline static constexpr int quadrature_degree(void)
+    {
+        return 4;
+    }
+    inline static double w(int i)
+    {
+        return array<double, 4>{ 1.0, 1.0, 1.0, 1.0 }[i];
+    }
+    inline static double xi(int i)
+    {
+        return array<double, 4>{ -0.57735027, -0.57735027, 0.57735027, 0.57735027 }[i];
+    }
+    inline static double eta(int i)
+    {
+        return array<double, 4>{ -0.57735027, 0.57735027, -0.57735027, 0.57735027 }[i];
+    }
+    inline static double coeff(matrix<double> &x, int i, int j)
+    {
+        return vector<double>{ 1.0, x(i, 0), x(i, 1), x(i, 0) * x(i, 1) }[j];
+    }
+    inline static array<double, 3> x(int i, const matrix<double> &x)
+    {
+        return { 0.25 * (x(0, 0) * (1.0 - xi(i)) * (1.0 - eta(i)) + x(1, 0) * (1.0 + xi(i)) * (1.0 - eta(i)) + x(2, 0) * (1.0 + xi(i)) * (1.0 + eta(i)) + x(3, 0) * (1.0 - xi(i)) * (1.0 + eta(i))),
+                 0.25 * (x(0, 1) * (1.0 - xi(i)) * (1.0 - eta(i)) + x(1, 1) * (1.0 + xi(i)) * (1.0 - eta(i)) + x(2, 1) * (1.0 + xi(i)) * (1.0 + eta(i)) + x(3, 1) * (1.0 - xi(i)) * (1.0 + eta(i))), 0 };
+    }
+};
+
 // Параметры функции формы линейного тетраэдра
 // N(x, y) = c0 + c1 * x + c2 * y
 struct TShape3d4

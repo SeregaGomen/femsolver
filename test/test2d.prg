@@ -1,4 +1,5 @@
-#mesh console.trpa
+#mesh console4.trpa
+//#mesh console.trpa
 //#mesh body2d.trpa
 argument x, y
 result u, v

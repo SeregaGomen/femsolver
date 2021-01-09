@@ -210,6 +210,9 @@ public:
         case FEType::fe2d3:
             run<TShape<TShape2d3>>();
             break;
+        case FEType::fe2d4:
+            run<TShape<TShape2d4>>();
+            break;
         case FEType::fe3d4:
             run<TShape<TShape3d4>>();
             break;
