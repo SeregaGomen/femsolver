@@ -9,7 +9,7 @@ functional W
 Exx = diff(u, x)
 Sxx = E * Exx
 
-W = 0.5 * (integral(Sxx var Exx) - 0.5 * integral(X var u))
+W = 0.5 * (integral(Sxx var Exx) - integral(X var u))
 
 u(x == 0) = 0
 

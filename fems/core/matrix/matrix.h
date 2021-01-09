@@ -196,7 +196,7 @@ public:
     {
         return cols;
     }
-    friend ostream &operator << (ostream &out, matrix &r)
+    friend ostream &operator << (ostream &out, const matrix &r)
     {
         out.setf( ios::fixed,  ios::floatfield );
         for (auto i = 0u; i < r.size1(); i++)

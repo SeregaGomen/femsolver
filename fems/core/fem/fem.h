@@ -80,7 +80,10 @@ private:
         bool is_aborted = false,
              ret;
 
-        //solver.print("matrix.res");
+        ///////////////////////////
+        // solver.print("matrix.res");
+        ///////////////////////////
+
         ret = solver.solve(res, eps, is_aborted);
 //        if (!is_aborted and ret)
 //            cout << res;
@@ -136,6 +139,9 @@ private:
         unsigned freedom = mesh.get_freedom(),
                  size = (unsigned)lm.size1();
 
+        /////////////////
+        // cout << lm << endl;
+        /////////////////
         // Учет матрицы
         for (unsigned l = 0; l < size; l++)
         {

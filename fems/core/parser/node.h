@@ -116,20 +116,15 @@ public:
     TValue<T> integral(const shared_ptr<TNode> code) const
     {
         double jacobian;
-        matrix<double> res(T::size() * T::freedom(), T::size() * T::freedom() + 1),
-                       jacobi,
-                       inverted_jacobi;
+        matrix<double> res(T::size() * T::freedom(), T::size() * T::freedom() + 1);
 
         for (auto i = 0u; i < T::w().size(); i++)
         {
-            // Матрица Якоби
-            jacobi = T::jacobi(i, fe_coord);
             // Якобиан
-            jacobian = det(jacobi);
-            // Обратная матрица Якоби
-            inverted_jacobi = inv(jacobi);
+            jacobian = det( T::jacobi(i, fe_coord));
             // Интегрирование по заданным узлам
-            TValue<T>::x = T::x(i, inverted_jacobi);
+//            TValue<T>::x = T::x(i, inverted_jacobi);
+            TValue<T>::x = T::x(i, fe_coord);
             res += code->value().asMatrix() * T::w()[i] * abs(jacobian);
         }
         return TValue<T>(res);

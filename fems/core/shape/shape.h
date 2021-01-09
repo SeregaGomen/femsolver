@@ -50,9 +50,9 @@ struct TShape1d2
     {
         return vector<double>{ 1.0, x(i, 0) }[j];
     }
-    inline static array<double, 3> x(int i, const matrix<double> &ij)
+    inline static array<double, 3> x(int i, const matrix<double> &x)
     {
-        return { ij(0, 0) * xi()[i], 0, 0 };
+        return { 0.5 * x(0, 0) * (1.0 - xi()[i]) + 0.5 * x(1, 0) * (1.0 + xi()[i]), 0, 0 };
     }
 };
 
@@ -115,9 +115,9 @@ struct TShape2d3
     {
         return vector<double>{ 1.0, x(i, 0), x(i, 1) }[j];
     }
-    inline static array<double, 3> x(int i, const matrix<double> &ij)
+    inline static array<double, 3> x(int i, const matrix<double> &x)
     {
-        return { ij(0, 0) * xi()[i] + ij(0, 1) * eta()[i], ij(1, 0) * xi()[i] + ij(1, 1) * eta()[i], 0 };
+        return { x(0, 0) * (1.0 - xi()[i] - eta()[i]) + x(1, 0) * xi()[i] + x(2, 0) * eta()[i], x(0, 1) * (1.0 - xi()[i] - eta()[i]) + x(1, 1) * xi()[i] + x(2, 1) * eta()[i], 0 };
     }
 };
 
@@ -188,11 +188,11 @@ struct TShape3d4
     {
         return vector<double>{ 1.0, x(i, 0), x(i, 1), x(i, 2) }[j];
     }
-    inline static array<double, 3> x(int i, const matrix<double> &ij)
+    inline static array<double, 3> x(int i, const matrix<double> &x)
     {
-        return { ij(0, 0) * xi()[i] + ij(0, 1) * eta()[i] + ij(0, 2) * psi()[i],
-                 ij(1, 0) * xi()[i] + ij(1, 1) * eta()[i] + ij(1, 2) * psi()[i],
-                 ij(2, 0) * xi()[i] + ij(2, 1) * eta()[i] + ij(2, 2) * psi()[i] };
+        return { x(0, 0) * (1.0 - xi()[i] - eta()[i] - psi()[i]) + x(1, 0) * xi()[i] + x(2, 0) * eta()[i] + x(3, 0) * psi()[i],
+                 x(0, 1) * (1.0 - xi()[i] - eta()[i] - psi()[i]) + x(1, 1) * xi()[i] + x(2, 1) * eta()[i] + x(3, 1) * psi()[i],
+                 x(0, 2) * (1.0 - xi()[i] - eta()[i] - psi()[i]) + x(1, 2) * xi()[i] + x(2, 2) * eta()[i] + x(3, 2) * psi()[i] };
     }
 };
 
