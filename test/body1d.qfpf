@@ -1,6 +1,6 @@
 {
     "Header": {
-        "DateTime": "2021-01-01T11:58:51.115",
+        "DateTime": "2021-01-10T22:57:03.431",
         "Object": "body1d",
         "Title": "QFEM problem file"
     },
@@ -79,7 +79,7 @@
             {
                 "Direct": 1,
                 "Expression": "1",
-                "Predicate": "x == 3",
+                "Predicate": "x == 10",
                 "Type": 5
             },
             {
