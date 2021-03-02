@@ -8,6 +8,8 @@ msvc:QMAKE_CXXFLAGS += /permissive-
 INCLUDEPATH += ../../../eigen \
                core
 
+LIBS +=-lpthread
+
 win32 {
     INCLUDEPATH += ../../../intel/compilers_and_libraries_2019.5.281/windows/mkl/include/
     LIBS += -L$$PWD/../../../intel/compilers_and_libraries_2019.5.281/windows/mkl/lib/intel64_win/ -lmkl_core -lmkl_intel_lp64 -lmkl_sequential

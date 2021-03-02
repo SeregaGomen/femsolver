@@ -166,7 +166,7 @@ public:
     {
         vector<double> c(T::size());
 
-        for (auto i = 0; i < result.size(); i++)
+        for (auto i = 0u; i < result.size(); i++)
         {
             vector<T> fun(T::size() * T::freedom(), c);
 

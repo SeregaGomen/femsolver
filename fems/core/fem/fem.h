@@ -104,7 +104,7 @@ private:
                 res(j, i) = u[i * mesh.get_freedom() + j];
         // Вычисляем вспомогательные функции (деформации и напряжения)
         progress.set_process(Message::GeneratingResult, 1, (int)mesh.get_fe().size1());
-        for (auto i = 0; i < mesh.get_fe().size1(); i++)
+        for (auto i = 0u; i < mesh.get_fe().size1(); i++)
         {
             progress.add_progress();
             // Формируем вектор перемещений для текущего КЭ
